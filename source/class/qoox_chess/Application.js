@@ -49,8 +49,11 @@ qx.Class.define("qoox_chess.Application",
 
       return widget;
     },
+
+    //TODO: table_state will offer easy access to the grid pieces
     getAnimGrid : function()
     {
+      //var table_state;// bi-dimensional 8x8 array with table state
       var box = new qx.ui.container.Composite().set({
         decorator: "main",
         backgroundColor: "white",
@@ -92,6 +95,8 @@ qx.Class.define("qoox_chess.Application",
 
       for (x=0; x<8; x++)
       {
+        //table_state[y][x] = null;
+
         layout.setColumnFlex(x, 0);
         layout.setRowFlex(x, 0);
 
@@ -120,6 +125,8 @@ qx.Class.define("qoox_chess.Application",
           // (you can only drop on a cell, but if the cell already has an image on it,
           // then the cell is beneath the image and at the same time the image does not have a drop
           // listener installed on it)
+
+
           newcell.addListener("drop", function(e) {
                   //TODO: legal chess moves
 
@@ -165,6 +172,12 @@ qx.Class.define("qoox_chess.Application",
                                   dy <= 1)
                                   legal = true;
                               break;
+                      case "queen":
+                              if( dx == dy  || 
+                                  dx == 0   ||
+                                  dy == 0)
+                                  legal = true;
+                              break;
                       default:;
                      };
                   };
@@ -200,8 +213,14 @@ qx.Class.define("qoox_chess.Application",
                       oldspot.piece = null;
                       spot.piece = moved_piece;
 
+                      /*
+                      table_state[oldspot.yc][oldspot.xc] = null ;
+                      table_state[   spot.yc][   spot.xc] = piece;
+                      */
+
                       spot.belongingComposite.add(moved_piece);
                       moved_piece.composite = spot.belongingComposite;
+
                       moved_piece.oldspot = spot;//always last
 
                   };
@@ -261,6 +280,8 @@ qx.Class.define("qoox_chess.Application",
 
               piece.piece_type = "pawn";
           };
+
+          //table_state[y][x] = piece;
 
 
           piece.setDraggable(true);
