@@ -113,8 +113,9 @@ qx.Class.define("qoox_chess.Application",
                   var moved_piece = e.getRelatedTarget();
                   var spot        = this;//where it is placed( where it is dropped )
                   var oldspot = moved_piece.oldspot;// where the moved piece was placed before dragging started
-
                   var legal = false;
+                  var dx = Math.abs(oldspot.xc - spot.xc);
+                  var dy = Math.abs(oldspot.yc - spot.yc);
 
                   //alert(moved_piece.player);
                   //alert(moved_piece.piece_type);
@@ -122,41 +123,40 @@ qx.Class.define("qoox_chess.Application",
 
                   //TODO: attack another piece
                   if(moved_piece.player == "black") {
-                      if(moved_piece.piece_type == "pawn") {
-                            if(
-                                oldspot.yc - spot.yc == 1 &&
-                                oldspot.xc ==spot.xc
-                                )//one row higher
-                                legal = true;
-                      };
+
+                    switch(moved_piece.piece_type) {
+                      case "pawn":
+                              if(
+                                  oldspot.yc - spot.yc == 1 &&
+                                  oldspot.xc ==spot.xc
+                                  )//one row higher
+                                  legal = true;
+                              break;
+                      case "knight":
+                              //no need to check dx or dy outside bounds because
+                              //they can only drop on cells which are already in bounds
+                              if( 
+                                  (dx == 2 && dy==1)||
+                                  (dx == 1 && dy==2)
+                                )
+                                  legal = true;
+                              break;
+                      case "bishop":
+                              if(dx == dy) {
+                                  var i=oldspot.xc;
+                                  var j=oldspot.yc;
+                                  legal = true;
+                                  //TODO:check for obstacles in between
+                              };
+                              break;
+                      case "king":
+                              if( dx <= 1 &&
+                                  dy <= 1)
+                                  legal = true;
+                              break;
+                      default:;
+                     };
                   };
-
-                  //no need to check dx or dy outside bounds because
-                  //they can only drop on cells which are already in bounds
-                  if(moved_piece.piece_type == "knight") {
-                      var dx = Math.abs(oldspot.xc - spot.xc);
-                      var dy = Math.abs(oldspot.yc - spot.yc);
-                      if( 
-                          (dx == 2 && dy==1)||
-                          (dx == 1 && dy==2)
-                        )
-                          legal = true;
-                  };
-                  
-
-                  if(moved_piece.piece_type == "bishop") {
-                      var dx = Math.abs(oldspot.xc - spot.xc);
-                      var dy = Math.abs(oldspot.yc - spot.yc);
-
-                      if(dx == dy) {
-                          var i=oldspot.xc;
-                          var j=oldspot.yc;
-                          legal = true;
-                          //TODO:check for obstacles in between
-                      };
-                  };
-
-
 
 
                   if(legal) {
@@ -207,7 +207,7 @@ qx.Class.define("qoox_chess.Application",
                       };
                   };
               };
-          } else {
+          } else {//just pawns
               piece     = 
                   new qx.ui.basic.Image(
                           "resource/qoox_chess/"+
