@@ -1,10 +1,6 @@
 /* ************************************************************************
 
-   Copyright:
-
-   License:
-
-   Authors:
+http://github.com/wsdookadr
 
 ************************************************************************ */
 
@@ -21,8 +17,10 @@ qx.Class.define("qoox_chess.Application",
 {
   extend : qx.application.Standalone,
 
+
   members :
   {
+
     main: function()
     {
       this.base(arguments);
@@ -35,7 +33,8 @@ qx.Class.define("qoox_chess.Application",
 
       this.getRoot().add(container, {left:0,top:0});
 
-      container.add(this.getAnimGrid(), {row: 0, column: 0});
+      container.add(this.getAnimGrid(this.getRoot()), {row: 0, column: 0});
+
     },
 
 
@@ -47,55 +46,9 @@ qx.Class.define("qoox_chess.Application",
         backgroundColor: color
       });
 
-      /*
-      widget.addListener("click", function(e)
-      {
-        if (this._active == widget) {
-          return;
-        }
-
-        var effects = [];
-        var duration = 0.3;
-
-        if (this._active)
-        {
-          this._active.set({
-            backgroundColor : color,
-            width: 50,
-            height: 50
-          });
-        }
-
-        widget.set({
-            backgroundColor : "orange"
-        });
-
-        var bounds = widget.getBounds();
-
-        effects.push(new demobrowser.demo.layout.Grid_Animated_Property(widget, "width").set({
-          from: bounds.width,
-          to: 200,
-          duration: duration,
-          transition: "sinodial"
-        }));
-        effects.push(new demobrowser.demo.layout.Grid_Animated_Property(widget, "height").set({
-          from: bounds.height,
-          to: 200,
-          duration: duration,
-          transition: "sinodial"
-        }));
-
-        var effect = new qx.fx.effect.core.Parallel(effects[0], effects[1]);
-        effect.start();
-
-        this._active = widget;
-      }, this);
-      */
 
       return widget;
     },
-
-
     getAnimGrid : function()
     {
       var box = new qx.ui.container.Composite().set({
@@ -105,9 +58,22 @@ qx.Class.define("qoox_chess.Application",
         height: 500
       });
 
+
       var layout = new qx.ui.layout.Grid();
       layout.setSpacing(0);
       box.setLayout(layout);
+
+      var backline = new Array(
+              "rock.PNG",
+              "knight.PNG",
+              "bishop.PNG",
+              "queen.PNG",
+              "king.PNG",
+              "bishop.PNG",
+              "knight.PNG",
+              "rock.PNG"
+      );
+
 
       this._active = null;
 
@@ -117,13 +83,28 @@ qx.Class.define("qoox_chess.Application",
         layout.setRowFlex(x, 1);
 
         for (var y=0; y<8; y++) {
-	  var newcell = this.getNewWidget( (((x%2)+(y%2))%2==0) ? "black":"white") , {row: y, column: x};
-	  
-          box.add(newcell);
+
+
+
+          var composite = new qx.ui.container.Composite(new qx.ui.layout.Grow());
+          box.add(composite,{row: y, column: x});
+	  var newcell   = this.getNewWidget( (((x%2)+(y%2))%2==0) ? "black":"white" , x , y);
+          composite.add(newcell);
+
+          if(y>1 && y<6)
+              continue;
+
+
+          var image     = new qx.ui.basic.Image("resource/qoox_chess/peon.PNG");
+          if(y==0||y==7)
+              image = new qx.ui.basic.Image("resource/qoox_chess/" + 
+                      backline[y==0?7-x:x]);
+
+          composite.add(image);
         }
       }
       return box;
-    }
+    },
   }
 
 
