@@ -53,7 +53,7 @@ qx.Class.define("qoox_chess.Application",
     {
       var box = new qx.ui.container.Composite().set({
         decorator: "main",
-        backgroundColor: "yellow",
+        backgroundColor: "white",
         width: 500,
         height: 500
       });
@@ -143,10 +143,8 @@ qx.Class.define("qoox_chess.Application",
                               break;
                       case "bishop":
                               if(dx == dy) {
-                                  var i=oldspot.xc;
-                                  var j=oldspot.yc;
-                                  legal = true;
                                   //TODO:check for obstacles in between
+                                  legal = true;
                               };
                               break;
                       case "king":

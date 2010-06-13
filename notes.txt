@@ -1,0 +1,5 @@
+
+
+convert images to some fixed size
+
+find *.PNG  | xargs -l -i convert {} -resize 65x65 {}
