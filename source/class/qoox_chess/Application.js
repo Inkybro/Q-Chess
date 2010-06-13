@@ -184,9 +184,8 @@ qx.Class.define("qoox_chess.Application",
 
 
                   if(legal) {
-                      /*
                       try {
-                          var req = new qx.io.remote.Request("http://localhost:2900/newmove", "POST", "application/json");
+                          var req = new qx.io.remote.Request("http://127.0.0.1:8124/newmove", "POST", "application/json");
 
                           var data = {
                                 player_id: 5,
@@ -207,7 +206,6 @@ qx.Class.define("qoox_chess.Application",
                       } catch(e) {
                           alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
                       };
-                      */
 
 
                       oldspot.piece = null;
