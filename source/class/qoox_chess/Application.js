@@ -89,6 +89,17 @@ qx.Class.define("qoox_chess.Application",
           var composite = new qx.ui.container.Composite(new qx.ui.layout.Grow());
           box.add(composite,{row: y, column: x});
 	  var newcell   = this.getNewWidget( (((x%2)+(y%2))%2==0) ? "black":"white" , x , y);
+          newcell.belongingComposite = composite;// store it here because I haven't found the method for this
+                                                 // in the docs yet(need to look some more)
+          newcell.setDroppable(true);// we can drop a piece on any of the cells of the 8x8 board
+
+
+          newcell.addListener("drop", function(e) {
+                  //TODO: legal chess moves
+                  this.belongingComposite.add(e.getRelatedTarget());
+          });
+
+
           composite.add(newcell);
 
           if(y>1 && y<6)
@@ -96,7 +107,8 @@ qx.Class.define("qoox_chess.Application",
 
 
           //y==1 or y==6
-          var image     = new qx.ui.basic.Image(
+          //peons
+          var piece     = new qx.ui.basic.Image(
                           "resource/qoox_chess/"+
                             (
                              y==1
@@ -107,8 +119,10 @@ qx.Class.define("qoox_chess.Application",
 
 
 
+          // knights/rooks/bishop/king/queen
+          // arranged so that they are in reverse of the other player
           if(y==0||y==7)
-              image = new qx.ui.basic.Image(
+              piece = new qx.ui.basic.Image(
                       "resource/qoox_chess/" + 
                           (
                            y==0 
@@ -117,7 +131,17 @@ qx.Class.define("qoox_chess.Application",
                           )
                       );
 
-          composite.add(image);
+          piece.setDraggable(true);
+
+
+          piece.addListener("dragstart", function(e) {
+                  e.addAction("move");
+          });
+
+
+
+
+          composite.add(piece);
         }
       }
       return box;
