@@ -54,13 +54,13 @@ qx.Class.define("qoox_chess.Application",
       var box = new qx.ui.container.Composite().set({
         decorator: "main",
         backgroundColor: "white",
-        width: 500,
-        height: 500
+        width: 550,
+        height: 550
       });
 
 
       var layout = new qx.ui.layout.Grid();
-      layout.setSpacing(0);
+      //layout.setSpacing(0);
       box.setLayout(layout);
 
       var backline = new Array(
@@ -75,15 +75,28 @@ qx.Class.define("qoox_chess.Application",
       );
 
 
+
       this._active = null;
       var typeregex = new RegExp("(rock|queen|bishop|knight|king)","");
 
-      for (var x=0; x<8; x++)
-      {
-        layout.setColumnFlex(x, 1);
-        layout.setRowFlex(x, 1);
 
-        for (var y=0; y<8; y++) {
+      var x,y;
+
+      // fix row height and column width so that different elements won't resize them
+      for(x=0;x<8;x++)
+          layout.setColumnWidth(x, 65);
+
+      for(y=0;y<8;y++)
+          layout.setRowHeight(y, 65);
+
+
+      for (x=0; x<8; x++)
+      {
+        layout.setColumnFlex(x, 0);
+        layout.setRowFlex(x, 0);
+
+
+        for (y=0; y<8; y++) {
 
 
 
@@ -158,7 +171,31 @@ qx.Class.define("qoox_chess.Application",
 
 
                   if(legal) {
-                      //alert("moving")
+                      /*
+                      try {
+                          var req = new qx.io.remote.Request("http://localhost:2900/newmove", "POST", "application/json");
+
+                          var data = {
+                                player_id: 5,
+                                type: "newmove",
+                                piece: moved_piece.piece_type,
+                                color: moved_piece.player,
+                                startpos: [oldspot.xc,oldspot.yc],
+                                  endpos: [   spot.xc,   spot.yc]
+                          };
+
+                          var strdata = qx.util.Serializer.toJson(data);
+                          //alert(strdata);
+                          req.setData(strdata);
+                          req.addListener("completed", function(e) { 
+                                  alert(e.getContent()); 
+                                  });
+                          req.send();
+                      } catch(e) {
+                          alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
+                      };
+                      */
+
 
                       oldspot.piece = null;
                       spot.piece = moved_piece;
@@ -166,6 +203,7 @@ qx.Class.define("qoox_chess.Application",
                       spot.belongingComposite.add(moved_piece);
                       moved_piece.composite = spot.belongingComposite;
                       moved_piece.oldspot = spot;//always last
+
                   };
           });
 
@@ -235,7 +273,9 @@ qx.Class.define("qoox_chess.Application",
           newcell.piece = piece;
           composite.add(piece);
         }
-      }
+      };
+
+
       return box;
     },
   }
