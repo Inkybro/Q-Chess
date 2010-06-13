@@ -95,10 +95,27 @@ qx.Class.define("qoox_chess.Application",
               continue;
 
 
-          var image     = new qx.ui.basic.Image("resource/qoox_chess/peon.PNG");
+          //y==1 or y==6
+          var image     = new qx.ui.basic.Image(
+                          "resource/qoox_chess/"+
+                            (
+                             y==1
+                             ?"wpeon.PNG"
+                             : "peon.PNG"
+                            )
+                         );
+
+
+
           if(y==0||y==7)
-              image = new qx.ui.basic.Image("resource/qoox_chess/" + 
-                      backline[y==0?7-x:x]);
+              image = new qx.ui.basic.Image(
+                      "resource/qoox_chess/" + 
+                          (
+                           y==0 
+                           ? "w" + backline[7-x]
+                           :       backline[x]
+                          )
+                      );
 
           composite.add(image);
         }
