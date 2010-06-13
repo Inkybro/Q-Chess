@@ -111,14 +111,16 @@ qx.Class.define("qoox_chess.Application",
                   //TODO: legal chess moves
 
                   var moved_piece = e.getRelatedTarget();
-                  var spot        = this;//where it is placed
-                  var oldspot = moved_piece.oldspot;
+                  var spot        = this;//where it is placed( where it is dropped )
+                  var oldspot = moved_piece.oldspot;// where the moved piece was placed before dragging started
 
                   var legal = false;
 
                   //alert(moved_piece.player);
                   //alert(moved_piece.piece_type);
 
+
+                  //TODO: attack another piece
                   if(moved_piece.player == "black") {
                       if(moved_piece.piece_type == "pawn") {
                             if(
@@ -127,7 +129,6 @@ qx.Class.define("qoox_chess.Application",
                                 )//one row higher
                                 legal = true;
                       };
-
                   };
 
                   //no need to check dx or dy outside bounds because
@@ -141,13 +142,32 @@ qx.Class.define("qoox_chess.Application",
                         )
                           legal = true;
                   };
+                  
+
+                  if(moved_piece.piece_type == "bishop") {
+                      var dx = Math.abs(oldspot.xc - spot.xc);
+                      var dy = Math.abs(oldspot.yc - spot.yc);
+
+                      if(dx == dy) {
+                          var i=oldspot.xc;
+                          var j=oldspot.yc;
+                          legal = true;
+                          //TODO:check for obstacles in between
+                      };
+                  };
+
+
 
 
                   if(legal) {
-                      //alert("moving");
+                      //alert("moving")
+
+                      oldspot.piece = null;
+                      spot.piece = moved_piece;
+
                       spot.belongingComposite.add(moved_piece);
                       moved_piece.composite = spot.belongingComposite;
-                      moved_piece.oldspot = spot;
+                      moved_piece.oldspot = spot;//always last
                   };
           });
 
@@ -214,6 +234,7 @@ qx.Class.define("qoox_chess.Application",
                            );
 
           piece.oldspot = newcell;
+          newcell.piece = piece;
           composite.add(piece);
         }
       }
