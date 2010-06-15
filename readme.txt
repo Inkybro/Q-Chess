@@ -11,4 +11,4 @@ Dependencies
 ============
 
 qooxdoo 1.1 sdk   unzipped in the same directory where you git clone this repo.
-node.js 0.1.98
+node.js 0.1.98    

@@ -128,7 +128,9 @@ qx.Class.define("qoox_chess.Application",
 
 
           newcell.addListener("drop", function(e) {
-                  //TODO: legal chess moves
+                  //legal chess moves
+				  //(these should also be checked on the server
+				  //to avoid data forgery:)
 
                   var moved_piece = e.getRelatedTarget();
                   var spot        = this;//where it is placed( where it is dropped )
