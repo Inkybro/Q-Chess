@@ -1,5 +1,21 @@
 
 
-convert images to some fixed size
+
+== convert images to some fixed size ==
 
 find *.PNG  | xargs -l -i convert {} -resize 65x65 {}
+
+
+
+== assert methods ==
+
+    * assert.ok(value, message)
+    * assert.equal(actual, expected, message) - comparison by ==
+    * assert.notEqual(actual, expected, message)
+    * assert.deepEqual(actual, expect, message) - recursive comparison
+    * assert.notDeepEqual(actual, expect, message)
+    * assert.strictEqual(actual, expected, message) - comparison by ===
+    * assert.notStrictEqual(actual, expected, message)
+    * assert.throws(block, error, message)
+    * assert.doesNotThrow(block, error, message)
+

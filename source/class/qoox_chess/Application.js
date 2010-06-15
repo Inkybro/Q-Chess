@@ -21,8 +21,25 @@ qx.Class.define("qoox_chess.Application",
   members :
   {
 
+	id: -1,
+	initGame: function() {
+	// notify server that a new player has joined
+	// server will assign him a new id
+		var req = new qx.io.remote.Request(
+			"http://127.0.0.1:8124",
+			"POST", 
+			"application/json");
+        req.setData("newuser");
+		//"completed" callback here sets this.id
+		req.send();
+
+		//after initGame is completed this.id will be sent along with any other
+		//requests to the server
+	},
+
     main: function()
     {
+	  this.initGame();
       this.base(arguments);
 
       var layout = new qx.ui.layout.Grid();
@@ -187,7 +204,7 @@ qx.Class.define("qoox_chess.Application",
 
                   if(legal) {
                       try {
-                          var req = new qx.io.remote.Request("http://127.0.0.1:8124/newmove", "POST", "application/json");
+                          var req = new qx.io.remote.Request("http://127.0.0.1:8124", "POST", "application/json");
 
                           var data = {
                                 player_id: 5,
@@ -199,7 +216,6 @@ qx.Class.define("qoox_chess.Application",
                           };
 
                           var strdata = qx.util.Serializer.toJson(data);
-                          //alert(strdata);
                           req.setData(strdata);
                           req.addListener("completed", function(e) { 
                                   alert(e.getContent()); 

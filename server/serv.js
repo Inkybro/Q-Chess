@@ -36,7 +36,7 @@ exports.server = http.createServer(function (req, res) {
 		res.writeHead(200, {'Content-Type': 'text/plain'});
 		res.end('Hello World\n');
 		sys.puts("just received a request\n");
-		sys.puts(sys.inspect(req)+"\n");
+		sys.puts(sys.p(req)+"\n");
 		});
 
 // fire up a server

@@ -10,5 +10,8 @@ A chess game server written using Node.js
 Dependencies
 ============
 
-qooxdoo 1.1 sdk   unzipped in the same directory where you git clone this repo.
-node.js 0.1.98    
+qooxdoo 1.1 sdk   unzipped in the same directory where you git clone this repo.  
+http://downloads.sourceforge.net/qooxdoo/qooxdoo-1.1-sdk.zip
+
+node.js 0.1.98    installed
+http://nodejs.org/dist/node-v0.1.98.tar.gz
