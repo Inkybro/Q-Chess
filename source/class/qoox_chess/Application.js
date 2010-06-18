@@ -21,20 +21,24 @@ qx.Class.define("qoox_chess.Application",
 
   members :
   {
-	ajaxurl: "http://127.0.0.1",
+	ajaxurl: "http://localhost",
 	id: -1,
 	initGame: function() {
 	// notify server that a new player has joined
 	// server will assign him a new id
-		var req = new qx.io.remote.Request(
+        var req = new qx.io.remote.Request(
 			this.ajaxurl,
-			"POST", 
+			"GET",
 			"application/json");
 
-		req.setParameter("message_type","newuser");
-
-        req.setData("newuser");
+		req.setParameter("messagetype","newuser");
+        //req.setData("newuser");
 		//"completed" callback here sets this.id
+
+		req.addListener("completed", function(e) { 
+				alert(qx.util.Serializer.toJson(e.getContent())); 
+		});
+
 		req.send();
 
 		//after initGame is completed this.id will be sent along with any other
@@ -43,8 +47,8 @@ qx.Class.define("qoox_chess.Application",
 
     main: function()
     {
-	  this.initGame();
       this.base(arguments);
+	  this.initGame();
 
       var layout = new qx.ui.layout.Grid();
       layout.setSpacing(20);

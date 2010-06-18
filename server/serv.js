@@ -23,12 +23,13 @@ var sys = require('sys'),
 	chess = require('./chess'),
 	path  = require('path');
 	//process = require('process');
-	//JSON = require('json');
 
 
 var players		= new Array();// what players are active
 var plays_with	= new Array();// who plays with who
 var tables		= new Array();// current game tables
+
+var last_player_id = 0;
 
 
 
@@ -49,6 +50,8 @@ exports.server = http.createServer(function (req, res) {
 			res.end('server not setup properly');
 			//res.writeHead(200, {'Content-Length': 0});
 		} else if ( req.method == 'POST') {
+
+
 			req.addListener('end', function () {
 				sys.puts(data);
 			});
@@ -61,7 +64,22 @@ exports.server = http.createServer(function (req, res) {
 
 				var uri = url.parse(req.url).pathname;  
 
-				sys.puts("uri =" +uri+"\n");
+
+				var params = url.parse(req.url,true);//params for GET request in params.query
+				//sys.puts(sys.p(params)+"\n"); // to display parameters of GET
+				if(params && 
+				   params.query && 
+				   params.query['messagetype'] == 'newuser' ) {
+					sys.puts("new user message\n");
+					
+					res.writeHead(200, {'Content-Type': 'application/json'});
+					res.end(
+							JSON.stringify(
+									{ id: ++last_player_id } 
+								)
+							);// send him a new id(maybe should be random?)
+					return;
+				};
 
 				var pieces = process.cwd().split("/");
 				pieces.pop();
@@ -69,13 +87,18 @@ exports.server = http.createServer(function (req, res) {
 
 				var filename = path.join( pieces.join("/") + "/", uri);
 
-				sys.puts("checking for file " + filename + "\n");
+				//sys.puts("uri =" +uri+"\n");
+				//sys.puts("checking for file " + filename + "\n");
 
 
 				// if the file exists 200 and serve it, otherwise 404 or 500
 				path.exists(filename, 
 					function(exists) {  
 						if(!exists) {
+							/* maybe it's not a request for a file */
+
+
+
 							sys.puts("file does not exist\n");
 							res.sendHeader(404, {"Content-Type": "text/plain"});  
 							res.write("404 Not Found\n");  
