@@ -22,7 +22,7 @@ qx.Class.define("qoox_chess.Application",
   members :
   {
 	ajaxurl: "http://localhost",
-	id: -1,
+	id: -1,// id of player that has been connected to the server
 	initGame: function() {
 	// notify server that a new player has joined
 	// server will assign him a new id
@@ -35,8 +35,13 @@ qx.Class.define("qoox_chess.Application",
         //req.setData("newuser");
 		//"completed" callback here sets this.id
 
+
+		var context = this;
 		req.addListener("completed", function(e) { 
-				alert(qx.util.Serializer.toJson(e.getContent())); 
+				var data = e.getContent();
+				//alert(qx.util.Serializer.toJson(e.getContent())); 
+				context.id = data.id;
+				alert(context.id);
 		});
 
 		req.send();
