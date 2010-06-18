@@ -36,17 +36,27 @@ var tables		= new Array();// current game tables
 
 //this is exported by this module
 exports.server = http.createServer(function (req, res) {
+		var data;//the data sent through the request to the server
+		req.addListener('data', function (chunk) {
+			data+=chunk;
+		});
+
 
 		sys.puts("just received a "+req.method+" request\n");
 		//sys.puts(sys.p(req)+"\n");
 		if(			req.method == 'OPTIONS') {
 			res.writeHead(200, {'Content-Type': 'text/plain'});
-			res.end('test');
+			res.end('server not setup properly');
 			//res.writeHead(200, {'Content-Length': 0});
 		} else if ( req.method == 'POST') {
-	
+			req.addListener('end', function () {
+				sys.puts(data);
+			});
+
+			//need to send a response back
+
 		} else if ( req.method == 'GET' ) {
-				//a quick static HTTP file server
+				//a quick static HTTP file server(will serve the needed qooxdoo files)
 				//keeping things minimalistic, no apache, no nothing, just node.js
 
 				var uri = url.parse(req.url).pathname;  
@@ -55,10 +65,14 @@ exports.server = http.createServer(function (req, res) {
 
 				var pieces = process.cwd().split("/");
 				pieces.pop();
+				//pop current directory, need parent
 
 				var filename = path.join( pieces.join("/") + "/", uri);
+
 				sys.puts("checking for file " + filename + "\n");
 
+
+				// if the file exists 200 and serve it, otherwise 404 or 500
 				path.exists(filename, 
 					function(exists) {  
 						if(!exists) {
@@ -98,6 +112,8 @@ sys.puts("started a server");
 
 
 //serializer
+
+/*
 JSON.stringify = JSON.stringify || function (obj) {  
 	var t = typeof (obj);  
 	if (t != "object" || obj === null) {  
@@ -116,6 +132,7 @@ JSON.stringify = JSON.stringify || function (obj) {
 		}  
 		return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}");  
 	}  
-};  
+};
 
+*/
 //sys.puts('Server running at http://127.0.0.1:8124/');
