@@ -73,32 +73,29 @@ exports.server = http.createServer(function (req, res) {
 					sys.puts("new user message\n");
 					
 					res.writeHead(200, {'Content-Type': 'application/json'});
+
+					var newid = ++last_player_id;
 					res.end(
 							JSON.stringify(
-									{ id: ++last_player_id } 
+									{ id: newid } 
 								)
 							);// send him a new id(maybe should be random?)
+					players[newid] = new chess.Table();
 					return;
 				};
 
+
+
 				var pieces = process.cwd().split("/");
-				pieces.pop();
-				//pop current directory, need parent
-
+				pieces.pop(); //pop current directory, need parent
 				var filename = path.join( pieces.join("/") + "/", uri);
-
 				//sys.puts("uri =" +uri+"\n");
 				//sys.puts("checking for file " + filename + "\n");
-
-
 				// if the file exists 200 and serve it, otherwise 404 or 500
 				path.exists(filename, 
 					function(exists) {  
 						if(!exists) {
-							/* maybe it's not a request for a file */
-
-
-
+							/* the file does not exist so maybe it's not a request for a file */
 							sys.puts("file does not exist\n");
 							res.sendHeader(404, {"Content-Type": "text/plain"});  
 							res.write("404 Not Found\n");  
