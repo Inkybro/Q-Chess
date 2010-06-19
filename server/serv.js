@@ -67,12 +67,12 @@ exports.server = http.createServer(function (req, res) {
 					 * persist, otherwise tell the client it's not where it's at.
 					 *
 					 */
-					var move = [data.startpos , data.endpos];
 
 					res.writeHead(200, {'Content-Type': 'text/plain'});
+					var move_ = [data.startpos , data.endpos];
 
-					if(right_table.legal_move(move)) {
-						right_table.move(move);
+					if(right_table.legal_move(data.startpos , data.endpos)) {
+						right_table.move(move_);
 						res.end( 
 							JSON.stringify( {move_okay: 1,})
 							);

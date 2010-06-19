@@ -194,6 +194,7 @@ qx.Class.define("qoox_chess.Application",
 								  var data = e.getContent();
 								  alert(data); 
 								  if(data.move_okay) {
+									  //if everything is ok then move the piece
 									  oldspot.piece = null;
 									  spot.piece = moved_piece;
 
