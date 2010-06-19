@@ -37,7 +37,7 @@ var last_player_id = 0;
 
 //this is exported by this module
 exports.server = http.createServer(function (req, res) {
-		var data;//the data sent through the request to the server
+		var data = "";//the data sent through the request to the server
 		req.addListener('data', function (chunk) {
 			data+=chunk;
 		});
@@ -54,9 +54,38 @@ exports.server = http.createServer(function (req, res) {
 
 			req.addListener('end', function () {
 				sys.puts(data);
-			});
+				sys.puts("before\n");
+				data = JSON.parse(data);
+				var id = data.player_id;
+				sys.puts("the id="+id+"\n");
+				sys.puts(sys.p(players[id])+"\n");
 
-			//need to send a response back
+				var right_table = players[id];
+				if(right_table) {
+					/*
+					 * check the move to see if it's legal , if it is , make the move
+					 * persist, otherwise tell the client it's not where it's at.
+					 *
+					 */
+					var move = [data.startpos , data.endpos];
+
+					res.writeHead(200, {'Content-Type': 'text/plain'});
+
+					if(right_table.legal_move(move)) {
+						right_table.move(move);
+						res.end( 
+							JSON.stringify( {move_okay: 1,})
+							);
+					}else {
+						res.end( 
+							JSON.stringify( {move_okay: 0,})
+							);
+					};
+
+				} else
+					sys.puts("table for player with id "+id+" does not exist");
+
+			});
 
 		} else if ( req.method == 'GET' ) {
 				//a quick static HTTP file server(will serve the needed qooxdoo files)
@@ -81,6 +110,7 @@ exports.server = http.createServer(function (req, res) {
 								)
 							);// send him a new id(maybe should be random?)
 					players[newid] = new chess.Table();
+					//sys.puts(sys.p(players[newid]));
 					return;
 				};
 

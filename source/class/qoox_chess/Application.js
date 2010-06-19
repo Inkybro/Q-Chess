@@ -84,6 +84,7 @@ qx.Class.define("qoox_chess.Application",
     getAnimGrid : function()
     {
       //var table_state;// bi-dimensional 8x8 array with table state
+	  var context = this;
       var box = new qx.ui.container.Composite().set({
         decorator: "main",
         backgroundColor: "white",
@@ -166,93 +167,53 @@ qx.Class.define("qoox_chess.Application",
                   var spot        = this;//where it is placed( where it is dropped )
                   var oldspot = moved_piece.oldspot;// where the moved piece was placed before dragging started
                   var legal = false;
-                  var dx = Math.abs(oldspot.xc - spot.xc);
-                  var dy = Math.abs(oldspot.yc - spot.yc);
 
                   //alert(moved_piece.player);
                   //alert(moved_piece.piece_type);
 
 
                   //TODO: attack another piece
-                  if(moved_piece.player == "black") {
-
-                    switch(moved_piece.piece_type) {
-                      case "pawn":
-                              if(
-                                  oldspot.yc - spot.yc == 1 &&
-                                  oldspot.xc ==spot.xc
-                                  )//one row higher
-                                  legal = true;
-                              break;
-                      case "knight":
-                              //no need to check dx or dy outside bounds because
-                              //they can only drop on cells which are already in bounds
-                              if( 
-                                  (dx == 2 && dy==1)||
-                                  (dx == 1 && dy==2)
-                                )
-                                  legal = true;
-                              break;
-                      case "bishop":
-                              if(dx == dy) {
-                                  //TODO:check for obstacles in between
-                                  legal = true;
-                              };
-                              break;
-                      case "king":
-                              if( dx <= 1 &&
-                                  dy <= 1)
-                                  legal = true;
-                              break;
-                      case "queen":
-                              if( dx == dy  || 
-                                  dx == 0   ||
-                                  dy == 0)
-                                  legal = true;
-                              break;
-                      default:;
-                     };
-                  };
 
 
-                  if(legal) {
-                      try {
-                          var req = new qx.io.remote.Request(this.ajaxurl, "POST", "application/json");
 
-                          var data = {
-                                player_id: 5,
-                                type: "newmove",
-                                piece: moved_piece.piece_type,
-                                color: moved_piece.player,
-                                startpos: [oldspot.xc,oldspot.yc],
-                                  endpos: [   spot.xc,   spot.yc]
-                          };
+				  try {
+					  var req = new qx.io.remote.Request(this.ajaxurl, "POST", "application/json");
 
-                          var strdata = qx.util.Serializer.toJson(data);
-                          req.setData(strdata);
-                          req.addListener("completed", function(e) { 
-                                  alert(e.getContent()); 
-                                  });
-                          req.send();
-                      } catch(e) {
-                          alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
-                      };
+					  var data = {
+							player_id: context.id,
+							type: "newmove",
+							piece: moved_piece.piece_type,
+							color: moved_piece.player,
+							startpos: [oldspot.xc,oldspot.yc],
+							  endpos: [   spot.xc,   spot.yc]
+					  };
+
+					  var strdata = qx.util.Serializer.toJson(data);
+					  req.setData(strdata);
+					  req.addListener("completed", function(e) { 
+								  var data = e.getContent();
+								  alert(data); 
+								  if(data.move_okay) {
+									  oldspot.piece = null;
+									  spot.piece = moved_piece;
 
 
-                      oldspot.piece = null;
-                      spot.piece = moved_piece;
+									  spot.belongingComposite.add(moved_piece);
+									  moved_piece.composite = spot.belongingComposite;
 
-                      /*
-                      table_state[oldspot.yc][oldspot.xc] = null ;
-                      table_state[   spot.yc][   spot.xc] = piece;
-                      */
+									  moved_piece.oldspot = spot;//always last
+								  } else
+									  alert("server says the move is not legal");
 
-                      spot.belongingComposite.add(moved_piece);
-                      moved_piece.composite = spot.belongingComposite;
 
-                      moved_piece.oldspot = spot;//always last
+							  });
+					  req.send();
+				  } catch(e) {
+					  alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
+				  };
 
-                  };
+
+
           });
 
 
