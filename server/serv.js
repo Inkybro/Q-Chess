@@ -169,7 +169,7 @@ fs.readFile('../config.json', function (err, data) {
 			data = data.replace(/\/\*[^*]+\*\//gm,"");
 
 			config = JSON.parse(data.toString());
-			exports.server.listen(80,config.server_url);//fire up server
+			exports.server.listen(80,config.settings.server_url);//fire up server
 			sys.puts("started a server");
 		});
 

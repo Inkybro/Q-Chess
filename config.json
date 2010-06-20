@@ -1,6 +1,5 @@
 {
   "name"    : "qoox_chess",
-  "server_url"  : "192.168.0.2",
 
   "include" :
   [
@@ -28,6 +27,11 @@
     "test-source",
     "translation"
   ],
+
+  "settings" :
+  {
+	"server_url"  : "192.168.0.2"
+  },
 
   "let" :
   {

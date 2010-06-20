@@ -19,15 +19,17 @@ qx.Class.define("qoox_chess.Application",
 
   members :
   {
-	ajaxurl: "http://192.168.0.2",
+	//ajaxurl: "http://192.168.0.2",
 	id: -1,// id of player that has been connected to the server
 	initGame: function() {
 	// notify server that a new player has joined
 	// server will assign him a new id
 	
+
+	//qx.core.Setting.server_url <-- takes it from config.json
 		try{
 			var req = new qx.io.remote.Request(
-				this.ajaxurl,
+				qx.core.Setting.server_url,
 				"GET",
 				"application/json");
 
@@ -180,7 +182,7 @@ qx.Class.define("qoox_chess.Application",
 
 
 				  try {
-					  var req = new qx.io.remote.Request(this.ajaxurl, "POST", "application/json");
+					  var req = new qx.io.remote.Request(qx.core.Setting.server_url, "POST", "application/json");
 
 					  var data = {
 							player_id: context.id,
