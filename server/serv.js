@@ -58,9 +58,10 @@ exports.server = http.createServer(function (req, res) {
 				data = JSON.parse(data);
 				var id = data.player_id;
 				sys.puts("the id="+id+"\n");
-				sys.puts(sys.p(players[id])+"\n");
+				//sys.puts(sys.p(players[id])+"\n");
 
-				var right_table = players[id];
+
+				var right_table = tables[id];
 				if(right_table) {
 					/*
 					 * check the move to see if it's legal , if it is , make the move
@@ -69,10 +70,9 @@ exports.server = http.createServer(function (req, res) {
 					 */
 
 					res.writeHead(200, {'Content-Type': 'text/plain'});
-					var move_ = [data.startpos , data.endpos];
 
 					if(right_table.legal_move(data.startpos , data.endpos)) {
-						right_table.move(move_);
+						right_table.move(data.startpos , data.endpos);
 						res.end( 
 							JSON.stringify( {move_okay: 1,})
 							);
@@ -109,7 +109,8 @@ exports.server = http.createServer(function (req, res) {
 									{ id: newid } 
 								)
 							);// send him a new id(maybe should be random?)
-					players[newid] = new chess.Table();
+					tables[newid] = new chess.Table();
+					players[newid] = true;
 					//sys.puts(sys.p(players[newid]));
 					return;
 				};

@@ -56,7 +56,7 @@ function Table() {
 		function(p1,p2) {
 			// p1 and p2 must be positions on some diagonal
 			// check if there's anything in between them or if everything's empty
-			var i = p1;
+			var i = p1;//BUG: needs to be cloned instead of copied
 
 			var dx;
 			var dy;
@@ -100,7 +100,7 @@ function Table() {
 		};
 	this.legal_move =
 		function(start,end) {
-			sys.puts("checking legal -> "+sys.p([start,end]));
+			//sys.puts("checking legal -> "+sys.p(start]));
 
 			//move format [[xstart,ystart],[xend,yend]]
 			var startx = start[1];
@@ -112,6 +112,8 @@ function Table() {
 			var dy = Math.abs(starty - endy);
 			
 			var typeregex = new RegExp("(pawn|rock|queen|bishop|knight|king)","");
+
+			sys.puts("actual piece there : "+this.table[starty][startx]+"\n");
 			var piecename = typeregex.exec(this.table[starty][startx])[0];
 			sys.puts("piece was " + piecename);
 
@@ -167,6 +169,15 @@ function Table() {
 
 	this.print =
 		function() {
+
+			var i,j;
+
+			for(i=0;i<this.table.size();i++) {
+				sys.puts("\n");
+				for(j=0;j<this.table[i].size();j++) {
+					sys.puts(this.table[i][j]+"  ");
+				};
+			};
 		};
 };
 
