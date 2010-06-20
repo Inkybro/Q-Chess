@@ -184,8 +184,8 @@ qx.Class.define("qoox_chess.Application",
 							type: "newmove",
 							piece: moved_piece.piece_type,
 							color: moved_piece.player,
-							startpos: [oldspot.xc,oldspot.yc],
-							  endpos: [   spot.xc,   spot.yc]
+							startpos: [oldspot.yc,oldspot.xc],
+							  endpos: [   spot.yc,   spot.xc]
 					  };
 
 					  var strdata = qx.util.Serializer.toJson(data);

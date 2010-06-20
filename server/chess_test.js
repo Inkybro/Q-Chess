@@ -7,11 +7,27 @@ var sys    = require('sys'     ) ,
 var t1 = new chess.Table();
 var t2 = new chess.Table();
 
-t1.move( [[0,1],[0,2]] );
-t2.move( [[6,6],[6,5]] );
+
+assert.notEqual(t1,t2,"t1!=t2");
+
+
+t1.move( [1,0],[2,0] );
+
+
+
+assert.equal(t2.nothing_inbetween([7,5],[5,7]),false,"not yet legal to move bishop");
+t2.move( [6,6],[5,6] );
+assert.equal( t2.nothing_inbetween([7,5],[5,7]) , true , "bishop was able to move" );
+assert.equal( t2.table[6][6] , "empty" , "pawn not there");
+assert.equal( t2.table[5][6] , "pawn" , "pawn");
+
+
+
+//sys.puts( sys.p(t2.table)+"\n" );
 assert.equal( t1.table[1][0] , "empty" , "second row first column empty" );
 assert.equal( t1.table[2][0] , "wpawn" , "third row first column contains a white pawn" );
-assert.equal( t2.legal_move([5,7],[7,5]) , "bishop was able to move" );
+
+
 
 
 
