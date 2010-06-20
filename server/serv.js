@@ -32,6 +32,9 @@ var tables		= new Array();// current game tables
 var last_player_id = 0;
 
 
+var config;//qooxdoo config file(will contain address to node.js server)
+
+
 
 
 
@@ -155,36 +158,22 @@ exports.server = http.createServer(function (req, res) {
 
 		});
 
-// fire up a server
-exports.server.listen(80, "192.168.0.2");
-//exports.server.listen(80, "127.0.0.1");
+fs.readFile('../config.json', function (err, data) {
+		if (err) 
+			throw err;
+		//sys.puts(data);
 
-sys.puts("started a server");
+			// cut off comments and parse JSON 
+			data = data.toString();
+			data = data.replace(/\/\/.*/gi,"");
+			data = data.replace(/\/\*[^*]+\*\//gm,"");
+
+			config = JSON.parse(data.toString());
+			exports.server.listen(80,config.server_url);//fire up server
+			sys.puts("started a server");
+		});
 
 
+//exports.server.listen(80, "127.0.0.1");//loopback, can't be accessed from other machines
 
-//serializer
 
-/*
-JSON.stringify = JSON.stringify || function (obj) {  
-	var t = typeof (obj);  
-	if (t != "object" || obj === null) {  
-		// simple data type  
-		if (t == "string") obj = '"'+obj+'"';  
-		return String(obj);  
-	}  
-	else {  
-		// recurse array or object  
-		var n, v, json = [], arr = (obj && obj.constructor == Array);  
-		for (n in obj) {  
-			v = obj[n]; t = typeof(v);  
-			if (t == "string") v = '"'+v+'"';  
-			else if (t == "object" && v !== null) v = JSON.stringify(v);  
-			json.push((arr ? "" : '"' + n + '":') + String(v));  
-		}  
-		return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}");  
-	}  
-};
-
-*/
-//sys.puts('Server running at http://127.0.0.1:8124/');

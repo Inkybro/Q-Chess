@@ -17,34 +17,37 @@ qx.Class.define("qoox_chess.Application",
 {
   extend : qx.application.Standalone,
 
-
-
   members :
   {
-	ajaxurl: "http://localhost",
+	ajaxurl: "http://192.168.0.2",
 	id: -1,// id of player that has been connected to the server
 	initGame: function() {
 	// notify server that a new player has joined
 	// server will assign him a new id
-        var req = new qx.io.remote.Request(
-			this.ajaxurl,
-			"GET",
-			"application/json");
+	
+		try{
+			var req = new qx.io.remote.Request(
+				this.ajaxurl,
+				"GET",
+				"application/json");
 
-		req.setParameter("messagetype","newuser");
-        //req.setData("newuser");
-		//"completed" callback here sets this.id
+			req.setParameter("messagetype","newuser");
+			//req.setData("newuser");
+			//"completed" callback here sets this.id
 
 
-		var context = this;
-		req.addListener("completed", function(e) { 
-				var data = e.getContent();
-				//alert(qx.util.Serializer.toJson(e.getContent())); 
-				context.id = data.id;
-				alert("You've been just registred in the server with id="+context.id);
-		});
+			var context = this;
+			req.addListener("completed", function(e) { 
+					var data = e.getContent();
+					//alert(qx.util.Serializer.toJson(e.getContent())); 
+					context.id = data.id;
+					alert("You've been just registred in the server with id="+context.id);
+			});
 
-		req.send();
+			req.send();
+		} catch(e) {
+			alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
+		};
 
 		//after initGame is completed this.id will be sent along with any other
 		//requests to the server
