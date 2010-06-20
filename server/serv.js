@@ -156,7 +156,8 @@ exports.server = http.createServer(function (req, res) {
 		});
 
 // fire up a server
-exports.server.listen(80, "127.0.0.1");
+exports.server.listen(80, "192.168.0.2");
+//exports.server.listen(80, "127.0.0.1");
 
 sys.puts("started a server");
 

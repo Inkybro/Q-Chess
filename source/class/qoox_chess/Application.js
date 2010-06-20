@@ -41,7 +41,7 @@ qx.Class.define("qoox_chess.Application",
 				var data = e.getContent();
 				//alert(qx.util.Serializer.toJson(e.getContent())); 
 				context.id = data.id;
-				alert(context.id);
+				alert("You've been just registred in the server with id="+context.id);
 		});
 
 		req.send();
@@ -192,7 +192,7 @@ qx.Class.define("qoox_chess.Application",
 					  req.setData(strdata);
 					  req.addListener("completed", function(e) { 
 								  var data = e.getContent();
-								  alert(data); 
+								  //alert(data); 
 								  if(data.move_okay) {
 									  //if everything is ok then move the piece
 									  oldspot.piece = null;
