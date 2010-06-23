@@ -3,17 +3,17 @@
   {
     "name" : "qoox_chess",
 
-    "summary" : "Custom Application",
-    "description" : "This is a skeleton for a custom application with qooxdoo.",
+    "summary" : "Q-Chess",
+    "description" : "Q-Chess is a UI for an online chess game",
     
-    "homepage" : "http://some.homepage.url/",
+    "homepage" : "http://github.com",
 
-    "license" : "SomeLicense",
+    "license" : "LGPL",
     "authors" : 
     [
       {
-        "name" : "First Author (uid)",
-        "email" : "first.author@some.domain"
+        "name" : "Stefan Petrea",
+        "email" : ""
       }
     ],
 

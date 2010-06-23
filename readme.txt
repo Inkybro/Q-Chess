@@ -25,10 +25,13 @@ Installation
 Make a symlink to qooxdoo-1.1-sdk to this directory(will be used by the server to serve
 the qooxdoo files and images).
 
+Go in config.json and set server.server_url to <your_ip>
 
 Running
 =======
 
 cd server
 node serv.js &
-firefox http://localhost/source/index.html
+firefox http://<your_ip>/source/index.html
+
+

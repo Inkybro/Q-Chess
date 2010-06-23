@@ -30,7 +30,7 @@
 
   "settings" :
   {
-	"server_url"  : "192.168.0.2"
+	"server_url"  : "192.168.0.101"
   },
 
   "let" :

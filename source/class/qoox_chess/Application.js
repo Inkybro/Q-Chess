@@ -16,7 +16,6 @@ http://github.com/wsdookadr
 qx.Class.define("qoox_chess.Application",
 {
   extend : qx.application.Standalone,
-
   members :
   {
 	//ajaxurl: "http://192.168.0.2",
@@ -25,6 +24,15 @@ qx.Class.define("qoox_chess.Application",
 	// notify server that a new player has joined
 	// server will assign him a new id
 	
+
+
+	// using socket.io
+	io.setPath('../libs/Socket.IO-node/test/client');
+	var socket = new io.Socket(qx.core.Setting.server_url);
+	socket.connect();
+	socket.send("test");
+
+	//finished using socket.io
 
 	//qx.core.Setting.server_url <-- takes it from config.json
 		try{
@@ -294,8 +302,6 @@ qx.Class.define("qoox_chess.Application",
 
 
       return box;
-    },
+    }
   }
-
-
 });

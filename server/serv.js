@@ -21,7 +21,8 @@ var sys = require('sys'),
 	url = require('url'),
 	fs = require('fs'),
 	chess = require('./chess'),
-	path  = require('path');
+	path  = require('path'),
+	io	  = require('../libs/Socket.IO-node/lib/socket.io');
 	//process = require('process');
 
 
@@ -46,7 +47,7 @@ exports.server = http.createServer(function (req, res) {
 		});
 
 
-		sys.puts("just received a "+req.method+" request\n");
+		//sys.puts("just received a "+req.method+" request\n");
 		//sys.puts(sys.p(req)+"\n");
 		if(			req.method == 'OPTIONS') {
 			res.writeHead(200, {'Content-Type': 'text/plain'});
@@ -135,8 +136,9 @@ exports.server = http.createServer(function (req, res) {
 							res.write("404 Not Found\n");  
 							res.close();  
 							return;  
-						}  
-					
+						};
+
+						// TODO -> check what path is requested and don't serve if outside this dir
 						fs.readFile(filename, "binary", 
 							function(err, file) {  
 								if(err) {  
@@ -169,11 +171,35 @@ fs.readFile('../config.json', function (err, data) {
 			data = data.replace(/\/\*[^*]+\*\//gm,"");
 
 			config = JSON.parse(data.toString());
+
+			////loopback, can't be accessed from other machines
 			exports.server.listen(80,config.settings.server_url);//fire up server
 			sys.puts("started a server");
 		});
 
 
-//exports.server.listen(80, "127.0.0.1");//loopback, can't be accessed from other machines
+var buffer = [], json = JSON.stringify;
 
+// 
+io.listen(exports.server, {
+	
+	onClientConnect: function(client){
+		client.send(json({ buffer: buffer }));
+		client.broadcast(json({ announcement: client.sessionId + ' connected' }));
+	},
+	
+	onClientDisconnect: function(client){
+		client.broadcast(json({ announcement: client.sessionId + ' disconnected' }));
+	},
+	
+	onClientMessage: function(message, client){
+		var msg = { message: [client.sessionId, message] };
+		buffer.push(msg);
+		if (buffer.length > 15) {
+			buffer.shift();
+		}
+		client.broadcast(json(msg));
+	}
+	
+});
 
