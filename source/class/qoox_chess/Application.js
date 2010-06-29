@@ -13,6 +13,13 @@ http://github.com/wsdookadr
 /**
  * This is the main application class of your custom application "qoox_chess"
  */
+
+
+
+
+
+
+
 qx.Class.define("qoox_chess.Application",
 {
   extend : qx.application.Standalone,
@@ -43,7 +50,7 @@ qx.Class.define("qoox_chess.Application",
 					var data = e.getContent();
 					//alert(qx.util.Serializer.toJson(e.getContent())); 
 					context.id = data.id;
-					alert("You've been just registred in the server with id="+context.id);
+					//alert("You've been just registred in the server with id="+context.id);
 			});
 
 			req.send();
@@ -64,11 +71,23 @@ qx.Class.define("qoox_chess.Application",
       layout.setSpacing(20);
 
       var container = new qx.ui.container.Composite(layout);
+
+
       container.setPadding(20);
 
-      this.getRoot().add(container, {left:0,top:0});
+
+	  var win = new qoox_chess.PreGame();
+	  this.getRoot().add(win,		{left:500, top:20}	);
+	  win.open();
+
+      this.getRoot().add(container, {left:0,top:0}		);
 
       container.add(this.getAnimGrid(this.getRoot()), {row: 0, column: 0});
+
+	  if(qx.core.Variant.isSet("qx.debug","on")) {
+		  qx.log.appender.Native;
+		  qx.log.appender.Console;
+	  };
 
     },
 
