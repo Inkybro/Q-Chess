@@ -203,6 +203,8 @@ qx.Class.define("qoox_chess.Application",
 									  oldspot.piece = null;
 									  spot.piece = moved_piece;
 
+									  this.debug("move sent to server");
+
 
 									  spot.belongingComposite.add(moved_piece);
 									  moved_piece.composite = spot.belongingComposite;
@@ -294,7 +296,7 @@ qx.Class.define("qoox_chess.Application",
 
 
       return box;
-    },
+    }
   }
 
 

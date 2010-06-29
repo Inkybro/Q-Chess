@@ -1,11 +1,8 @@
 Qooxdoo chess
 =============
 
-
 A chess UI written using qooxdoo RIA framework.
 A chess game server written using Node.js 
-
-
 
 Dependencies
 ============
@@ -17,18 +14,20 @@ node.js 0.1.98    installed
 http://nodejs.org/dist/node-v0.1.98.tar.gz
 
 
-
 Installation
 ============
 
-
 Make a symlink to qooxdoo-1.1-sdk to this directory(will be used by the server to serve
 the qooxdoo files and images).
-
 
 Running
 =======
 
 cd server
+ln -s <path_to_qooxdoo-1.1-sdk.zip>
+chmod +x generate.py
+./generate.py build
 node serv.js &
-firefox http://localhost/source/index.html
+firefox http://localhost/build/index.html
+
+

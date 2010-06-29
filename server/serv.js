@@ -124,7 +124,7 @@ exports.server = http.createServer(function (req, res) {
 				pieces.pop(); //pop current directory, need parent
 				var filename = path.join( pieces.join("/") + "/", uri);
 				//sys.puts("uri =" +uri+"\n");
-				//sys.puts("checking for file " + filename + "\n");
+				sys.puts("checking for file " + filename + "\n");
 				// if the file exists 200 and serve it, otherwise 404 or 500
 				path.exists(filename, 
 					function(exists) {  
