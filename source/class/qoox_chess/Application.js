@@ -165,7 +165,7 @@ qx.Class.define("qoox_chess.Application",
           var piece;
           var composite = new qx.ui.container.Composite(new qx.ui.layout.Grow());
           box.add(composite,{row: y, column: x});
-	  var newcell   = this.getNewWidget( (((x%2)+(y%2))%2==0) ? "black":"white" , x , y);
+		  var newcell   = this.getNewWidget( (((x%2)+(y%2))%2==0) ? "black":"white" , x , y);
 
           // (x,y) coordinates on the board
           newcell.xc = x;
@@ -178,28 +178,18 @@ qx.Class.define("qoox_chess.Application",
 
 
           // the fact that the drop listener is installed only on
-          // the cells, this also eliminates the possibility of having 2 pieces in one cell
+          // cells eliminates the possibility of having 2 pieces in one cell
           // (you can only drop on a cell, but if the cell already has an image on it,
           // then the cell is beneath the image and at the same time the image does not have a drop
           // listener installed on it)
 
 
           newcell.addListener("drop", function(e) {
-                  //legal chess moves
-				  //(these should also be checked on the server
-				  //to avoid data forgery:)
 
                   var moved_piece = e.getRelatedTarget();
                   var spot        = this;//where it is placed( where it is dropped )
                   var oldspot = moved_piece.oldspot;// where the moved piece was placed before dragging started
                   var legal = false;
-
-                  //alert(moved_piece.player);
-                  //alert(moved_piece.piece_type);
-
-
-                  //TODO: attack another piece
-
 
 
 				  try {
@@ -215,33 +205,27 @@ qx.Class.define("qoox_chess.Application",
 					  };
 
 					  var strdata = qx.util.Serializer.toJson(data);
+					  //ask server if move is legal
 					  req.setData(strdata);
 					  req.addListener("completed", function(e) { 
 								  var data = e.getContent();
-								  //alert(data); 
 								  if(data.move_okay) {
-									  //if everything is ok then move the piece
 									  oldspot.piece = null;
 									  spot.piece = moved_piece;
 
 									  this.debug("move sent to server");
-
-
 									  spot.belongingComposite.add(moved_piece);
-									  moved_piece.composite = spot.belongingComposite;
 
+
+									  moved_piece.composite = spot.belongingComposite;
 									  moved_piece.oldspot = spot;//always last
 								  } else
 									  alert("server says the move is not legal");
-
-
 							  });
 					  req.send();
 				  } catch(e) {
 					  alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
 				  };
-
-
 
           });
 
