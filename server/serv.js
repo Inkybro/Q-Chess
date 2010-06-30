@@ -16,10 +16,10 @@
  */
 
 
-var sys = require('sys'),
-	http = require('http'),
-	url = require('url'),
-	fs = require('fs'),
+var sys   = require('sys'),
+	http  = require('http'),
+	url   = require('url'),
+	fs    = require('fs'),
 	chess = require('./chess'),
 	path  = require('path');
 	//process = require('process');
@@ -99,21 +99,42 @@ exports.server = http.createServer(function (req, res) {
 
 				var params = url.parse(req.url,true);//params for GET request in params.query
 				//sys.puts(sys.p(params)+"\n"); // to display parameters of GET
-				if(params && 
+				if(
+				   params && 
 				   params.query && 
-				   params.query['messagetype'] == 'newuser' ) {
+				   params.query['messagetype'] == 'newuser' 
+				  ) {
 					sys.puts("new user message\n");
+					sys.puts("name: "+params.query['name']+"\n");
+
 					
 					res.writeHead(200, {'Content-Type': 'application/json'});
 
-					var newid = ++last_player_id;
+					if(
+							params.query['name'] &&
+							players[params.query['name']]
+					  ){ 
+							res.end(
+								JSON.stringify(
+										{ 
+											messagetype: "error",
+											description: "name already registered"
+										} 
+									)
+								);	
+							return;
+					   };
+
+
+					var newid = ++last_player_id;//maybe need some more sophisticated id generating routine ?
+
 					res.end(
 							JSON.stringify(
 									{ id: newid } 
 								)
 							);// send him a new id(maybe should be random?)
 					tables[newid] = new chess.Table();
-					players[newid] = true;
+					players[params.query['name']] = newid;
 					//sys.puts(sys.p(players[newid]));
 					return;
 				};

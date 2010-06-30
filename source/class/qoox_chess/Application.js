@@ -40,15 +40,26 @@ qx.Class.define("qoox_chess.Application",
   						return false;
   					};
   		}
-  	}
+  	},
+	connected: {//after calling initGame() this will be true if it has connected to the server or false otherwise
+		check: "Boolean",
+		init: false
+	}
   },
   
   members :
   {
 	//ajaxurl: "http://192.168.0.2",
 	id: -1,// id of player that has been connected to the server
-
-	initGame: function() {
+	makeGrid: function() {
+		  var layout = new qx.ui.layout.Grid();
+		  layout.setSpacing(20);
+		  var container = new qx.ui.container.Composite(layout);
+		  container.setPadding(20);
+		  this.getRoot().add(container, {left:0,top:0}		);
+		  container.add(this.getAnimGrid(this.getRoot()), {row: 0, column: 0});
+	},
+	initGame: function(intercept) {
 	// notify server that a new player has joined
 	// server will assign him a new id
 	
@@ -60,16 +71,21 @@ qx.Class.define("qoox_chess.Application",
 				"GET",
 				"application/json");
 
-			req.setParameter("messagetype","newuser");
-			//req.setData("newuser");
-			//"completed" callback here sets this.id
-
+			req.setParameter("messagetype"	,"newuser"				);
+			req.setParameter("name"			,this.getPlayerName()	);
 
 			var context = this;
 			req.addListener("completed", function(e) { 
 					var data = e.getContent();
 					//alert(qx.util.Serializer.toJson(e.getContent())); 
-					context.id = data.id;
+
+					if(data.id) {
+						context.id = data.id;
+						context.connected = true;
+						intercept();
+					} else if(data.messagetype == "error") {
+						alert("error: "+ data.description);
+					};
 					//alert("You've been just registred in the server with id="+context.id);
 			});
 
@@ -93,24 +109,18 @@ qx.Class.define("qoox_chess.Application",
 	  };
 
 
-	  this.initGame();
 
-      var layout = new qx.ui.layout.Grid();
-      layout.setSpacing(20);
-      var container = new qx.ui.container.Composite(layout);
-      container.setPadding(20);
 
 	  var context = this;//need to find a better way without storing the context like this
 	  var win = new qoox_chess.PreGame(function(val) {
 			  context.setPlayerName(val);
+			  context.initGame(function(){
+				  alert("intercept!");
+				  context.makeGrid();
+			  });//send req to server telling him what your name is
 	  });
 	  this.getRoot().add(win,		{left:500, top:20}	);
 	  win.open();
-
-      this.getRoot().add(container, {left:0,top:0}		);
-
-      container.add(this.getAnimGrid(this.getRoot()), {row: 0, column: 0});
-
 
     },
 
@@ -186,7 +196,7 @@ qx.Class.define("qoox_chess.Application",
           var piece;
           var composite = new qx.ui.container.Composite(new qx.ui.layout.Grow());
           box.add(composite,{row: y, column: x});
-		  var newcell   = this.getNewWidget( (((x%2)+(y%2))%2==0) ? "black":"white" , x , y);
+		  var newcell   = this.getNewWidget( (((x%2)+(y%2))%2!=0) ? "black":"white" , x , y);
 
           // (x,y) coordinates on the board
           newcell.xc = x;
@@ -194,7 +204,7 @@ qx.Class.define("qoox_chess.Application",
 
           newcell.belongingComposite = composite;// store it here because I haven't found the method for this
                                                  // in the docs yet(need to look some more)
-                                                 //
+
           newcell.setDroppable(true);// we can drop a piece on any of the cells of the 8x8 board
 
 
@@ -266,12 +276,7 @@ qx.Class.define("qoox_chess.Application",
           if(y==0||y==7) {
               // knights/rooks/bishop/king/queen
               // arranged so that they are in reverse order in comparison to the other player
-              var img_name = 
-                  (
-                   y==0 
-                   ? "w" + backline[7-x]
-                   :       backline[x]
-                  );
+              var img_name = (y==0 ? 'w' : '') + backline[x] ;
 
               piece = new qx.ui.basic.Image( "resource/qoox_chess/" + img_name );
 

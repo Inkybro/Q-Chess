@@ -16,7 +16,23 @@ This will be the window in which the user will write his username
 qx.Class.define("qoox_chess.PreGame",
 	{
 		extend: qx.ui.window.Window,
+
+
 		members: {
+			askServAboutName: function(name) {
+				/*
+				 * make a request to the server and ask if the name
+				 * was already registered by someone else or if it looks funny(does not respect those 
+				 * regexes and 5-10 chars conditions
+				 *
+				 * if all is ok then the server sends to the client a list with all connected clients
+				 * and the table
+				 * 
+				 * if something is wrong the user gets some message and the process stops there
+				 *
+				 */
+				 
+			}
 		},
 		construct: function(fn) {// maybe not the best method to get context, need to re-read docs
 			this.base(arguments,"Pre-game settings"); // call qx.ui.window.Window constructor with those args
@@ -40,7 +56,12 @@ qx.Class.define("qoox_chess.PreGame",
 
 			startButton = new qx.ui.form.Button("Join chess playground", "dialog-apply.png");
 			startButton.addListener("execute",function() {
-					fn(input1.getValue());
+					try {
+						fn(input1.getValue());
+						
+						
+					} catch(e) {
+					};
 			});
 			this.add(startButton);
 		}

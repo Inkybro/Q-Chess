@@ -191,7 +191,9 @@ function Table() {
 					sys.puts(this.table[i][j]+"  ");
 				};
 			};
-		};
+	};
+
+	this.name = "";//name of the player
 };
 
 exports.Table = Table;
