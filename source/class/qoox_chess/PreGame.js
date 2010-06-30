@@ -18,29 +18,10 @@ qx.Class.define("qoox_chess.PreGame",
 		extend: qx.ui.window.Window,
 		members: {
 		},
-		properties: {
-			playerName: {
-				check: function(value) {
-						if
-							(
-								value                           &&
-								value.match(/^[a-z0-9]+$/gi,"") &&
-								value.length >= 5               &&
-								value.length <=10
-							){
-								return true;
-								alert("prepare...");
-							} else {
-								alert("player name must  be between 5-10 alphanumeric chars");
-								return false;
-							};
-				}
-			}
-		},
-		construct: function() {
+		construct: function(fn) {// maybe not the best method to get context, need to re-read docs
 			this.base(arguments,"Pre-game settings"); // call qx.ui.window.Window constructor with those args
 			this.setWidth(300);
-			this.setHeight(200);
+			this.setHeight(40);
 			this.setShowMinimize(false);
 
 
@@ -57,12 +38,9 @@ qx.Class.define("qoox_chess.PreGame",
 
 			input1.focus();
 
-			var context = this; // maybe not the best method to get context, need to re-read docs
-
 			startButton = new qx.ui.form.Button("Join chess playground", "dialog-apply.png");
 			startButton.addListener("execute",function() {
-					context.setPlayerName(input1.getValue());
-					//alert(this);
+					fn(input1.getValue());
 			});
 			this.add(startButton);
 		}

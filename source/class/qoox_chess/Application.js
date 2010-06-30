@@ -23,12 +23,31 @@ http://github.com/wsdookadr
 qx.Class.define("qoox_chess.Application",
 {
   extend : qx.application.Standalone,
-
+  properties: {
+  	playerName: {
+  		check: function(value) {
+  				if
+  					(
+  						value                           &&
+  						value.match(/^[a-z0-9]+$/gi,"") &&
+  						value.length >= 5               &&
+  						value.length <=10
+  					){
+  						return true;
+  						alert("prepare...");
+  					} else {
+  						alert("player name must  be between 5-10 alphanumeric chars");
+  						return false;
+  					};
+  		}
+  	}
+  },
+  
   members :
   {
 	//ajaxurl: "http://192.168.0.2",
 	id: -1,// id of player that has been connected to the server
-	playerName: "",
+
 	initGame: function() {
 	// notify server that a new player has joined
 	// server will assign him a new id
@@ -81,8 +100,10 @@ qx.Class.define("qoox_chess.Application",
       var container = new qx.ui.container.Composite(layout);
       container.setPadding(20);
 
-
-	  var win = new qoox_chess.PreGame();
+	  var context = this;//need to find a better way without storing the context like this
+	  var win = new qoox_chess.PreGame(function(val) {
+			  context.setPlayerName(val);
+	  });
 	  this.getRoot().add(win,		{left:500, top:20}	);
 	  win.open();
 
