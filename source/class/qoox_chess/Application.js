@@ -28,6 +28,7 @@ qx.Class.define("qoox_chess.Application",
   {
 	//ajaxurl: "http://192.168.0.2",
 	id: -1,// id of player that has been connected to the server
+	playerName: "",
 	initGame: function() {
 	// notify server that a new player has joined
 	// server will assign him a new id
@@ -65,14 +66,19 @@ qx.Class.define("qoox_chess.Application",
     main: function()
     {
       this.base(arguments);
+
+
+	  if(qx.core.Variant.isSet("qx.debug","on")) {
+		  qx.log.appender.Native;
+		  qx.log.appender.Console;
+	  };
+
+
 	  this.initGame();
 
       var layout = new qx.ui.layout.Grid();
       layout.setSpacing(20);
-
       var container = new qx.ui.container.Composite(layout);
-
-
       container.setPadding(20);
 
 
@@ -84,10 +90,6 @@ qx.Class.define("qoox_chess.Application",
 
       container.add(this.getAnimGrid(this.getRoot()), {row: 0, column: 0});
 
-	  if(qx.core.Variant.isSet("qx.debug","on")) {
-		  qx.log.appender.Native;
-		  qx.log.appender.Console;
-	  };
 
     },
 

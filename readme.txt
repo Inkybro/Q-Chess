@@ -24,7 +24,7 @@ Running
 =======
 
 cd server
-ln -s <path_to_qooxdoo-1.1-sdk.zip>
+ln -s <path_to_qooxdoo-1.1-sdk>
 chmod +x generate.py
 ./generate.py build
 node serv.js &
