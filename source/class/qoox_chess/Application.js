@@ -44,6 +44,9 @@ qx.Class.define("qoox_chess.Application",
 	connected: {//after calling initGame() this will be true if it has connected to the server or false otherwise
 		check: "Boolean",
 		init: false
+	},
+	playerList: {
+		check: "Object"
 	}
   },
   
@@ -63,32 +66,34 @@ qx.Class.define("qoox_chess.Application",
 		var configList = new qx.ui.form.List;
 		this.getRoot().add(configList, {left:600,top:0});
 		configList.setScrollbarX("on");
-
 		configList.set({ height: 280, width: 150 });
 
-
+		this.setPlayerList(configList);
 		//var item = new qx.ui.form.ListItem("Player1");
 		//item.setEnabled(true);
 		//configList.add(item);
 
 
+		this.repopulatePlayerList();
+	},
+	repopulatePlayerList: function() {
 		var req = new qx.io.remote.Request(
 				qx.core.Setting.server_url,
 				"GET",
 				"application/json");
 
+		var context = this;
 		req.setParameter("messagetype"	,"get_players_list"				);
 		req.addListener("completed", function(e) { 
+				context.getPlayerList().removeAll();
 				var data = e.getContent();
 				for(i in data.names) {
 					var item = new qx.ui.form.ListItem(data.names[i]);
 					item.setEnabled(true);
-					configList.add(item);
+					context.getPlayerList().add(item);
 				}
 		});
-
 		req.send();
-
 	},
 	tellServerImAlive: function(){
 		/*
@@ -119,8 +124,6 @@ qx.Class.define("qoox_chess.Application",
 
 	},
 	initGame: function(intercept) {
-	// notify server that a new player has joined
-	// server will assign him a new id
 	
 
 	//qx.core.Setting.server_url <-- it takes this from config.json(in project directory)
@@ -148,6 +151,8 @@ qx.Class.define("qoox_chess.Application",
 					//alert("You've been just registred in the server with id="+context.id);
 			});
 
+			// notify server that a new player has joined
+			// server will assign him a new id
 			req.send();
 		} catch(e) {
 			alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
@@ -155,7 +160,12 @@ qx.Class.define("qoox_chess.Application",
 
 		var timer = qx.util.TimerManager.getInstance();
 		timer.start(function(userData, timerId)
-					{ context.tellServerImAlive(); },
+					{ 
+						context.tellServerImAlive(); 
+						context.repopulatePlayerList();
+						//TODO: should also ask for new Players List but if it hasn't changed just send something
+						//saying it hasn't changed instead of all the list.
+					},
 					3000,
 					this,
 					{ count: 0 }
