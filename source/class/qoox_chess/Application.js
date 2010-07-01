@@ -90,12 +90,41 @@ qx.Class.define("qoox_chess.Application",
 		req.send();
 
 	},
+	tellServerImAlive: function(){
+		/*
+		 * tell the server that the client is alive and
+		 * everything's alright
+		 *
+		 *
+		 * client sends to server a ping message which server records the time of and sends back the last time a request was done
+		 * client verifies the time and if it's earlier than 3 minutes it means it's ok
+		 * server checks every 10 minutes for all clients and if it hasn't received a players a ping from the them in the last 10 minutes
+		 * it disconnects them.
+		 */
+
+		var req = new qx.io.remote.Request(qx.core.Setting.server_url, "POST", "application/json");
+		var data = {
+			messagetype: "ping",
+			name: this.getPlayerName(),
+			description: "it's all good .."
+		};
+
+		var strdata = qx.util.Serializer.toJson(data);
+		req.setData(strdata);
+
+		req.addListener("completed", function(e) {
+		});
+
+		req.send();
+
+	},
 	initGame: function(intercept) {
 	// notify server that a new player has joined
 	// server will assign him a new id
 	
 
 	//qx.core.Setting.server_url <-- it takes this from config.json(in project directory)
+		var context = this;
 		try{
 			var req = new qx.io.remote.Request(
 				qx.core.Setting.server_url,
@@ -105,7 +134,6 @@ qx.Class.define("qoox_chess.Application",
 			req.setParameter("messagetype"	,"newuser"				);
 			req.setParameter("name"			,this.getPlayerName()	);
 
-			var context = this;
 			req.addListener("completed", function(e) { 
 					var data = e.getContent();
 					//alert(qx.util.Serializer.toJson(e.getContent())); 
@@ -124,6 +152,14 @@ qx.Class.define("qoox_chess.Application",
 		} catch(e) {
 			alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
 		};
+
+		var timer = qx.util.TimerManager.getInstance();
+		timer.start(function(userData, timerId)
+					{ context.tellServerImAlive(); },
+					3000,
+					this,
+					{ count: 0 }
+		);
 
 		//after initGame is completed this.id will be sent along with any other
 		//requests to the server
@@ -261,7 +297,7 @@ qx.Class.define("qoox_chess.Application",
 
 					  var data = {
 							player_id: context.id,
-							type: "newmove",
+							messagetype: "newmove",
 							piece: moved_piece.piece_type,
 							color: moved_piece.player,
 							startpos: [oldspot.yc,oldspot.xc],

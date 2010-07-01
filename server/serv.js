@@ -26,7 +26,8 @@ var sys   = require('sys'),
 
 
 var players		= new Array();// what players are active
-var ids			= new Array();
+var ids			= new Array();// keys are ids and values are boolean
+var lastping	= new Array();// keys are names and values are Date objects for the last time they pinged
 
 var plays_with	= new Array();// who plays with who
 var tables		= new Array();// current game tables
@@ -61,34 +62,43 @@ exports.server = http.createServer(function (req, res) {
 				sys.puts(data);
 				sys.puts("before\n");
 				data = JSON.parse(data);
-				var id = data.player_id;
-				sys.puts("the id="+id+"\n");
-				//sys.puts(sys.p(players[id])+"\n");
+
+				switch(data.messagetype) {
+					case "newmove":
+							var id = data.player_id;
+							sys.puts("the id="+id+"\n");
+							//sys.puts(sys.p(players[id])+"\n");
 
 
-				var right_table = tables[id];
-				if(right_table) {
-					/*
-					 * check the move to see if it's legal , if it is , make the move
-					 * persist, otherwise tell the client it's not where it's at.
-					 *
-					 */
+							var right_table = tables[id];
+							if(right_table) {
+								/*
+								 * check the move to see if it's legal , if it is , make the move
+								 * persist, otherwise tell the client it's not where it's at.
+								 *
+								 */
 
-					res.writeHead(200, {'Content-Type': 'text/plain'});
+								res.writeHead(200, {'Content-Type': 'text/plain'});
 
-					if(right_table.legal_move(data.startpos , data.endpos)) {
-						right_table.move(data.startpos , data.endpos);
-						res.end( 
-							JSON.stringify( {move_okay: 1,})
-							);
-					}else {
-						res.end( 
-							JSON.stringify( {move_okay: 0,})
-							);
-					};
+								if(right_table.legal_move(data.startpos , data.endpos)) {
+									right_table.move(data.startpos , data.endpos);
+									res.end( 
+										JSON.stringify( {move_okay: 1,})
+										);
+								}else {
+									res.end( 
+										JSON.stringify( {move_okay: 0,})
+										);
+								};
 
-				} else
-					sys.puts("table for player with id "+id+" does not exist");
+							} else
+								sys.puts("table for player with id "+id+" does not exist");
+							break;
+					case "ping":
+						sys.puts("just got a ping from"+data.name);
+						break;
+					default:;
+				};
 
 			});
 
@@ -137,6 +147,7 @@ exports.server = http.createServer(function (req, res) {
 							tables[newid] = new chess.Table();
 							players[params.query['name']] = newid;
 							ids[newid] = true;
+							lastping[params.query['name']] = Date.now();
 							//sys.puts(sys.p(players[newid]));
 							return;
 						case "get_players_list":
@@ -158,6 +169,10 @@ exports.server = http.createServer(function (req, res) {
 											{ names: p_names } 
 										)
 									);
+
+							break;
+						case "ping":
+
 
 							break;
 						default:;
