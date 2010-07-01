@@ -52,19 +52,50 @@ qx.Class.define("qoox_chess.Application",
 	//ajaxurl: "http://192.168.0.2",
 	id: -1,// id of player that has been connected to the server
 	makeGrid: function() {
-		  var layout = new qx.ui.layout.Grid();
-		  layout.setSpacing(20);
-		  var container = new qx.ui.container.Composite(layout);
-		  container.setPadding(20);
-		  this.getRoot().add(container, {left:0,top:0}		);
-		  container.add(this.getAnimGrid(this.getRoot()), {row: 0, column: 0});
+		var layout = new qx.ui.layout.Grid();
+		layout.setSpacing(20);
+		var container = new qx.ui.container.Composite(layout);
+		container.setPadding(20);
+		this.getRoot().add(container, {left:0,top:0}		);
+		container.add(this.getAnimGrid(this.getRoot()), {row: 0, column: 0});
+	},
+	makePlayerList: function() {
+		var configList = new qx.ui.form.List;
+		this.getRoot().add(configList, {left:600,top:0});
+		configList.setScrollbarX("on");
+
+		configList.set({ height: 280, width: 150 });
+
+
+		//var item = new qx.ui.form.ListItem("Player1");
+		//item.setEnabled(true);
+		//configList.add(item);
+
+
+		var req = new qx.io.remote.Request(
+				qx.core.Setting.server_url,
+				"GET",
+				"application/json");
+
+		req.setParameter("messagetype"	,"get_players_list"				);
+		req.addListener("completed", function(e) { 
+				var data = e.getContent();
+				for(i in data.names) {
+					var item = new qx.ui.form.ListItem(data.names[i]);
+					item.setEnabled(true);
+					configList.add(item);
+				}
+		});
+
+		req.send();
+
 	},
 	initGame: function(intercept) {
 	// notify server that a new player has joined
 	// server will assign him a new id
 	
 
-	//qx.core.Setting.server_url <-- takes it from config.json
+	//qx.core.Setting.server_url <-- it takes this from config.json(in project directory)
 		try{
 			var req = new qx.io.remote.Request(
 				qx.core.Setting.server_url,
@@ -115,8 +146,10 @@ qx.Class.define("qoox_chess.Application",
 	  var win = new qoox_chess.PreGame(function(val) {
 			  context.setPlayerName(val);
 			  context.initGame(function(){
-				  alert("intercept!");
+				  //alert("intercept!");
 				  context.makeGrid();
+				  context.makePlayerList();
+				  //alert("now player list");
 			  });//send req to server telling him what your name is
 	  });
 	  this.getRoot().add(win,		{left:500, top:20}	);

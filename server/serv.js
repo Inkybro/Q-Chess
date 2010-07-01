@@ -26,6 +26,8 @@ var sys   = require('sys'),
 
 
 var players		= new Array();// what players are active
+var ids			= new Array();
+
 var plays_with	= new Array();// who plays with who
 var tables		= new Array();// current game tables
 
@@ -101,42 +103,65 @@ exports.server = http.createServer(function (req, res) {
 				//sys.puts(sys.p(params)+"\n"); // to display parameters of GET
 				if(
 				   params && 
-				   params.query && 
-				   params.query['messagetype'] == 'newuser' 
+				   params.query
 				  ) {
-					sys.puts("new user message\n");
-					sys.puts("name: "+params.query['name']+"\n");
-
-					
 					res.writeHead(200, {'Content-Type': 'application/json'});
+					switch(params.query['messagetype']){
+						case "newuser":
+							sys.puts("new user message\n");
+							sys.puts("name: "+params.query['name']+"\n");
 
-					if(
-							params.query['name'] &&
-							players[params.query['name']]
-					  ){ 
+							if(
+									params.query['name'] &&
+									players[params.query['name']]
+							  ){ 
+									res.end(
+										JSON.stringify(
+												{ 
+													messagetype: "error",
+													description: "name already registered"
+												} 
+											)
+										);	
+									return;
+							   };
+
+
+							var newid = ++last_player_id;//maybe need some more sophisticated id generating routine ?
+
 							res.end(
-								JSON.stringify(
-										{ 
-											messagetype: "error",
-											description: "name already registered"
-										} 
-									)
-								);	
+									JSON.stringify(
+											{ id: newid } 
+										)
+									);// send him a new id(maybe should be random?)
+							tables[newid] = new chess.Table();
+							players[params.query['name']] = newid;
+							ids[newid] = true;
+							//sys.puts(sys.p(players[newid]));
 							return;
-					   };
+						case "get_players_list":
+							var p_names = new Array();//player names
 
 
-					var newid = ++last_player_id;//maybe need some more sophisticated id generating routine ?
+							sys.puts("get players list message\n");
 
-					res.end(
-							JSON.stringify(
-									{ id: newid } 
-								)
-							);// send him a new id(maybe should be random?)
-					tables[newid] = new chess.Table();
-					players[params.query['name']] = newid;
-					//sys.puts(sys.p(players[newid]));
-					return;
+							for(name in players)
+								p_names.push(name);
+
+							sys.puts(JSON.stringify(
+											{ names: p_names } 
+										)+"\n"
+									);
+
+							res.end(
+									JSON.stringify(
+											{ names: p_names } 
+										)
+									);
+
+							break;
+						default:;
+					};
 				};
 
 
