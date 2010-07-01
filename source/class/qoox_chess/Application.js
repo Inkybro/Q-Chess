@@ -60,7 +60,7 @@ qx.Class.define("qoox_chess.Application",
 		var container = new qx.ui.container.Composite(layout);
 		container.setPadding(20);
 		this.getRoot().add(container, {left:0,top:0}		);
-		container.add(this.getAnimGrid(this.getRoot()), {row: 0, column: 0});
+		container.add(this.getChessGrid(this.getRoot()), {row: 0, column: 0});
 	},
 	makePlayerList: function() {
 		var configList = new qx.ui.form.List;
@@ -190,13 +190,14 @@ qx.Class.define("qoox_chess.Application",
 
 	  var context = this;//need to find a better way without storing the context like this
 	  var win = new qoox_chess.PreGame(function(val) {
-			  context.setPlayerName(val);
-			  context.initGame(function(){
-				  //alert("intercept!");
-				  context.makeGrid();
-				  context.makePlayerList();
-				  //alert("now player list");
-			  });//send req to server telling him what your name is
+		  context.setPlayerName(val);
+		  context.initGame(function(){
+			  //alert("intercept!");
+			  context.makeGrid();
+			  context.makePlayerList();
+			  win.close();
+			  //alert("now player list");
+		  });//send req to server telling him what your name is
 	  });
 	  this.getRoot().add(win,		{left:500, top:20}	);
 	  win.open();
@@ -217,7 +218,7 @@ qx.Class.define("qoox_chess.Application",
     },
 
     //TODO: table_state will offer easy access to the grid pieces
-    getAnimGrid : function()
+    getChessGrid : function()
     {
       //var table_state;// bi-dimensional 8x8 array with table state
 	  var context = this;

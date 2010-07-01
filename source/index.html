@@ -3,7 +3,22 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <title>qoox_chess</title>
+  <script src="/socket.io-node/client/socket.io.js"></script>
   <script type="text/javascript" src="script/qoox_chess.js"></script>
+
+
+
 </head>
-<body></body>
+<body>
+
+	<script>
+		//TODO: wait for io namespace to get loaded and then try io.setpath etc...
+		if(io) {
+			io.setPath('/client/');
+			var socket = new io.Socket(null, {rememberTransport: false, port: 8080});
+			socket.connect();
+		};
+	</script>
+
+</body>
 </html>

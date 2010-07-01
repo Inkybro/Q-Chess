@@ -20,6 +20,7 @@ var sys   = require('sys'),
 	http  = require('http'),
 	url   = require('url'),
 	fs    = require('fs'),
+	io    = require('../socket.io-node/lib/socket.io'),
 	chess = require('./chess'),
 	path  = require('path');
 	//process = require('process');
@@ -191,7 +192,9 @@ exports.server = http.createServer(function (req, res) {
 					function(exists) {  
 						if(!exists) {
 							/* the file does not exist so maybe it's not a request for a file */
+
 							sys.puts("file does not exist\n");
+							process.exit(0);
 							res.sendHeader(404, {"Content-Type": "text/plain"});  
 							res.write("404 Not Found\n");  
 							res.close();  
@@ -236,5 +239,35 @@ fs.readFile('../config.json', function (err, data) {
 
 
 //exports.server.listen(80, "127.0.0.1");//loopback, can't be accessed from other machines
+io.listen(exports.server, {
+	
+	onClientConnect: function(client){
 
+		sys.puts("client connected on socket.io-node\n");
+	/*
+		client.send(json({ buffer: buffer }));
+		client.broadcast(json({ announcement: client.sessionId + ' connected' }));
+	*/
+	},
+	
+	onClientDisconnect: function(client){
+
+	/*
+		client.broadcast(json({ announcement: client.sessionId + ' disconnected' }));
+	*/
+	},
+	
+	onClientMessage: function(message, client){
+
+		/*
+		var msg = { message: [client.sessionId, message] };
+		buffer.push(msg);
+		if (buffer.length > 15) {
+			buffer.shift();
+		}
+		client.broadcast(json(msg));
+		*/
+	}
+	
+});
 

@@ -41,6 +41,8 @@ qx.Class.define("qoox_chess.PreGame",
 			this.setShowMinimize(false);
 
 
+
+
 			var layout2= new qx.ui.layout.HBox();
 			var layout = new qx.ui.layout.VBox();
 			this.setLayout(layout);
@@ -54,12 +56,10 @@ qx.Class.define("qoox_chess.PreGame",
 
 			input1.focus();
 
-			startButton = new qx.ui.form.Button("Join chess playground", "dialog-apply.png");
+			startButton = new qx.ui.form.Button("Join chess playground", "resource/qoox_chess/dialog-apply.png");
 			startButton.addListener("execute",function() {
 					try {
 						fn(input1.getValue());
-						
-						
 					} catch(e) {
 					};
 			});
