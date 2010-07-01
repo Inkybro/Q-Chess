@@ -20,6 +20,8 @@ Installation
 Make a symlink to qooxdoo-1.1-sdk to this directory(will be used by the server to serve
 the qooxdoo files and images).
 
+In config.json change settings.server_url to what you need.
+
 Running
 =======
 
