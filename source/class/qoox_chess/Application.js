@@ -199,6 +199,27 @@ qx.Class.define("qoox_chess.Application",
 			  //alert("now player list");
 		  });//send req to server telling him what your name is
 	  });
+	  
+
+	  //comet client
+	  if(Faye) {
+
+		  var client = new Faye.Client('http://localhost/comet', {
+			timeout: 120
+		  });
+
+		  client.subscribe('/comet', function(message) {
+				  alert('Got a message: ' + message.text);
+		  });
+
+		  client.publish('/comet', {
+				    text: 'Hello world'
+		  });
+
+	  };
+
+
+
 	  this.getRoot().add(win,		{left:500, top:20}	);
 	  win.open();
 

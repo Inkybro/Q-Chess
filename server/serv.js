@@ -20,6 +20,7 @@ var sys   = require('sys'),
 	http  = require('http'),
 	url   = require('url'),
 	fs    = require('fs'),
+	faye    = require('../faye/faye-node'),
 	chess = require('./chess'),
 	path  = require('path');
 	//process = require('process');
@@ -39,10 +40,22 @@ var config;//qooxdoo config file(will contain address to node.js server)
 
 
 
+var fayeServer = new Faye.NodeAdapter({
+	mount:    '/comet',
+	timeout:  45
+});
+
+
+
 
 
 //this is exported by this module
 exports.server = http.createServer(function (req, res) {
+		if (fayeServer.call(req, res)) return;
+
+
+
+
 		var data = "";//the data sent through the request to the server
 		req.addListener('data', function (chunk) {
 			data+=chunk;
