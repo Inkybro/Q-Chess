@@ -1,7 +1,8 @@
 /*
  * http://github.com/wsdookadr
  *
- * abstracting the chess game and the moves
+ * the Table object is used to store the current state of the table,
+ * it provides methods to assure moves are legal
  *
  */
 
@@ -117,10 +118,16 @@ function Table() {
 			var dx = Math.abs(startx - endx);
 			var dy = Math.abs(starty - endy);
 			
-			var typeregex = new RegExp("(pawn|rook|queen|bishop|knight|king)","");
+			var typeregex = new RegExp("(pawn|rook|queen|bishop|knight|king|empty)","");
 
 			sys.puts("actual piece there : "+this.table[starty][startx]+"\n");
 			var piecename = typeregex.exec(this.table[starty][startx])[0];
+
+            if(piecename == "empty") {
+                sys.puts("error: trying to move an empty cell..\n");
+                return false;
+            };
+
 			sys.puts("piece was " + piecename);
 
 

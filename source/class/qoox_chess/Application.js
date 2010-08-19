@@ -16,6 +16,7 @@ http://github.com/wsdookadr
 
 
 
+// TODO: code here needs some serious refactoring(at least getChessGrid ...)
 
 
 
@@ -24,183 +25,232 @@ qx.Class.define("qoox_chess.Application",
 {
   extend : qx.application.Standalone,
   properties: {
-  	playerName: {
-  		check: function(value) {
-  				if
-  					(
-  						value                           &&
-  						value.match(/^[a-z0-9]+$/gi,"") &&
-  						value.length >= 5               &&
-  						value.length <=10
-  					){
-  						return true;
-  						alert("prepare...");
-  					} else {
-  						alert("player name must  be between 5-10 alphanumeric chars");
-  						return false;
-  					};
-  		}
-  	},
-	connected: {//after calling initGame() this will be true if it has connected to the server or false otherwise
-		check: "Boolean",
-		init: false
-	},
-	playerList: {
-		check: "Object"
-	}
+      playerName: {
+          check: function(value) {
+                  if
+                      (
+                          value                           &&
+                          value.match(/^[a-z0-9]+$/gi,"") &&
+                          value.length >= 5               &&
+                          value.length <=10
+                      ){
+                          return true;
+                          alert("prepare...");
+                      } else {
+                          alert("player name must  be between 5-10 alphanumeric lowercase chars");
+                          return false;
+                      };
+          }
+      },
+    connected: {//after calling initGame() this will be true if it has connected to the server or false otherwise
+        check: "Boolean",
+        init: false
+    },
+    playerList: {
+        check: "Object"
+    }
+
   },
   
   members :
   {
-	//ajaxurl: "http://192.168.0.2",
-	id: -1,// id of player that has been connected to the server
-	makeGrid: function() {
-		var layout = new qx.ui.layout.Grid();
-		layout.setSpacing(20);
-		var container = new qx.ui.container.Composite(layout);
-		container.setPadding(20);
-		this.getRoot().add(container, {left:0,top:0}		);
-		container.add(this.getChessGrid(this.getRoot()), {row: 0, column: 0});
-	},
-	makePlayerList: function() {
-		var configList = new qx.ui.form.List;
-		this.getRoot().add(configList, {left:600,top:0});
-		configList.setScrollbarX("on");
-		configList.set({ height: 280, width: 150 });
-
-		this.setPlayerList(configList);
-		//var item = new qx.ui.form.ListItem("Player1");
-		//item.setEnabled(true);
-		//configList.add(item);
+    //ajaxurl: "http://192.168.0.2",
+    id: -1,// id of player that has been connected to the server
 
 
-		this.repopulatePlayerList();
-	},
-	repopulatePlayerList: function() {
-		var req = new qx.io.remote.Request(
-				qx.core.Setting.server_url,
-				"GET",
-				"application/json");
+    
+    makeRequest: function(verb) {
+        var req = 
+            new qx.io.remote.Request(
+                    qx.core.Setting.server_url,
+                    verb,
+                    "application/json"
+                    );
+        req.setTimeout(8);
+        return req;
+    },
+    
+    makeGrid: function() {
+        var layout = new qx.ui.layout.Grid();
+        layout.setSpacing(20);
+        var container = new qx.ui.container.Composite(layout);
+        container.setPadding(20);
+        this.getRoot().add(container, {left:0,top:0}        );
+        container.add(this.getChessGrid(this.getRoot()), {row: 0, column: 0});
+    },
+    makePlayerList: function() {
+        var configList = new qx.ui.form.List;
+        this.getRoot().add(configList, {left:600,top:0});
+        configList.setScrollbarX("on");
+        configList.set({ height: 280, width: 150 });
 
-		var context = this;
-		req.setParameter("messagetype"	,"get_players_list"				);
-		req.addListener("completed", function(e) { 
-				context.getPlayerList().removeAll();
-				var data = e.getContent();
-				for(i in data.names) {
-					var item = new qx.ui.form.ListItem(data.names[i]);
-					item.setEnabled(true);
-					context.getPlayerList().add(item);
-				}
-		});
-		req.send();
-	},
-	tellServerImAlive: function(){
-		/*
-		 * tell the server that the client is alive and
-		 * everything's alright
-		 *
-		 *
-		 * client sends to server a ping message which server records the time of and sends back the last time a request was done
-		 * client verifies the time and if it's earlier than 3 minutes it means it's ok
-		 * server checks every 10 minutes for all clients and if it hasn't received a players a ping from the them in the last 10 minutes
-		 * it disconnects them.
-		 */
+        this.setPlayerList(configList);
+        //var item = new qx.ui.form.ListItem("Player1");
+        //item.setEnabled(true);
+        //configList.add(item);
 
-		var req = new qx.io.remote.Request(qx.core.Setting.server_url, "POST", "application/json");
-		var data = {
-			messagetype: "ping",
-			name: this.getPlayerName(),
-			description: "it's all good .."
-		};
 
-		var strdata = qx.util.Serializer.toJson(data);
-		req.setData(strdata);
+        this.repopulatePlayerList();
+    },
+    repopulatePlayerList: function() {
+        var req = this.makeRequest("GET");
 
-		req.addListener("completed", function(e) {
-		});
+        var context = this;
+        req.setParameter("messagetype"    ,"get_players_list"                );
+        req.addListener("completed", function(e) { 
+                context.getPlayerList().removeAll();
+                var data = e.getContent();
+                for(i in data.names) {
+                    var item = new qx.ui.form.ListItem(data.names[i]);
+                    item.setEnabled(true);
+                    context.getPlayerList().add(item);
+                }
+        });
+        req.send();
+    },
+    tellServerImAlive: function(){
+        /*
+         * tell the server that the client is alive and
+         * everything's alright
+         *
+         *
+         * client sends to server a ping message which server records the time of and sends back the last time a request was done
+         * server verifies the time and if it's below 3 minutes it means it's ok
+         * server checks every 10 minutes for all clients and if it hasn't received a players a ping from them in the last 10 minutes
+         * it disconnects them.
+         */
 
-		req.send();
+        //var req = new qx.io.remote.Request(qx.core.Setting.server_url, "POST", "application/json");
+        var req = this.makeRequest("POST");
+        var data = {
+            messagetype: "ping",
+            name: this.getPlayerName(),
+            description: "it's all good .."
+        };
 
-	},
-	initGame: function(intercept) {
-	
+        var strdata = qx.util.Serializer.toJson(data);
+        req.setData(strdata);
 
-	//qx.core.Setting.server_url <-- it takes this from config.json(in project directory)
-		var context = this;
-		try{
-			var req = new qx.io.remote.Request(
-				qx.core.Setting.server_url,
-				"GET",
-				"application/json");
+        req.addListener("completed", function(e) {
+        });
 
-			req.setParameter("messagetype"	,"newuser"				);
-			req.setParameter("name"			,this.getPlayerName()	);
+        req.send();
 
-			req.addListener("completed", function(e) { 
-					var data = e.getContent();
-					//alert(qx.util.Serializer.toJson(e.getContent())); 
+    },
+    initGame: function(intercept) {
+    
 
-					if(data.id) {
-						context.id = data.id;
-						context.connected = true;
-						intercept();
-					} else if(data.messagetype == "error") {
-						alert("error: "+ data.description);
-					};
-					//alert("You've been just registred in the server with id="+context.id);
-			});
+    //qx.core.Setting.server_url <-- it takes this from config.json(in project directory)
+        var context = this;
+        try{
+            var req = this.makeRequest("GET");
 
-			// notify server that a new player has joined
-			// server will assign him a new id
-			req.send();
-		} catch(e) {
-			alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
-		};
+            req.setParameter("messagetype"    ,"newuser"                );
+            req.setParameter("name"            ,this.getPlayerName()    );
 
-		var timer = qx.util.TimerManager.getInstance();
-		timer.start(function(userData, timerId)
-					{ 
-						context.tellServerImAlive(); 
-						context.repopulatePlayerList();
-						//TODO: should also ask for new Players List but if it hasn't changed just send something
-						//saying it hasn't changed instead of all the list.
-					},
-					3000,
-					this,
-					{ count: 0 }
-		);
+            req.addListener("completed", function(e) { 
+                    var data = e.getContent();
+                    //alert(qx.util.Serializer.toJson(e.getContent())); 
 
-		//after initGame is completed this.id will be sent along with any other
-		//requests to the server
-	},
+                    if(data.id) {
+                        context.id = data.id;
+                        context.connected = true;
+
+                        var timer = qx.util.TimerManager.getInstance();
+                        timer.start(function(userData, timerId)
+                                    { 
+                                        context.tellServerImAlive(); 
+                                        context.repopulatePlayerList();
+                                        //TODO: should also ask for new Players List but if it hasn't changed just send something
+                                        //saying it hasn't changed instead of all the list.
+                                    },
+                                    3000,
+                                    this,
+                                    { count: 0 }
+                        );
+
+                        intercept();
+
+                    } else if(data.messagetype == "error") {
+
+
+
+                        alert("error: "+ data.description);
+                    };
+                    //alert("You've been just registred in the server with id="+context.id);
+            });
+
+            // notify server that a new player has joined
+            // server will assign him a new id
+            req.send();
+        } catch(e) {
+            alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
+        };
+
+
+
+
+        //after initGame is completed this.id will be sent along with any other
+        //requests to the server
+    },
 
     main: function()
     {
       this.base(arguments);
 
 
-	  if(qx.core.Variant.isSet("qx.debug","on")) {
-		  qx.log.appender.Native;
-		  qx.log.appender.Console;
-	  };
+      if(qx.core.Variant.isSet("qx.debug","on")) {
+          qx.log.appender.Native;
+          qx.log.appender.Console;
+      };
 
 
 
 
-	  var context = this;//need to find a better way without storing the context like this
-	  var win = new qoox_chess.PreGame(function(val) {
-		  context.setPlayerName(val);
-		  context.initGame(function(){
-			  //alert("intercept!");
-			  context.makeGrid();
-			  context.makePlayerList();
-			  win.close();
-			  //alert("now player list");
-		  });//send req to server telling him what your name is
-	  });
-	  this.getRoot().add(win,		{left:500, top:20}	);
-	  win.open();
+      var context = this;//need to find a better way without storing the context like this
+      var win = new qoox_chess.PreGame(function(val) {
+          context.setPlayerName(val);
+          context.initGame(function(){
+              //alert("intercept!");
+              context.makeGrid();
+              context.makePlayerList();
+              win.close();
+              //alert("now player list");
+          });//send req to server telling him what your name is
+      });
+      
+
+      //comet client
+      if(Faye) {
+
+		  try {
+
+
+			  var client  = new Faye.Client("http://localhost/comet",{timeout: 120});
+
+
+			  client.subscribe('/comet', function(message) {
+					  alert('Got a message: ' + message.text);
+			  });
+
+			  client.publish('/comet', {
+						text: 'welcome to the chess lobby'
+			  });
+
+
+		  } catch(e) {
+
+              alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
+
+		  };
+			  
+
+      };
+
+
+
+      this.getRoot().add(win,        {left:500, top:20}    );
+      win.open();
 
     },
 
@@ -217,17 +267,33 @@ qx.Class.define("qoox_chess.Application",
       return widget;
     },
 
+
+    updateSpotPiece: function(oldspot,spot,moved_piece) {
+          oldspot.piece = null;
+          spot.piece = moved_piece;
+
+          //this.debug("move sent to server");
+          spot.belongingComposite.add(moved_piece);
+
+          moved_piece.composite = spot.belongingComposite;
+          moved_piece.oldspot = spot;//always last
+    },
+
     //TODO: table_state will offer easy access to the grid pieces
     getChessGrid : function()
     {
       //var table_state;// bi-dimensional 8x8 array with table state
-	  var context = this;
+      var context = this;
       var box = new qx.ui.container.Composite().set({
         decorator: "main",
         backgroundColor: "white",
         width: 550,
         height: 550
       });
+
+      var gridSize = 8;
+
+
 
 
       var layout = new qx.ui.layout.Grid();
@@ -248,20 +314,19 @@ qx.Class.define("qoox_chess.Application",
 
 
       this._active = null;
+	  //which kind of piece except for pawns which are treated separately
       var typeregex = new RegExp("(rock|queen|bishop|knight|king)","");
 
 
-      var x,y;
+      var x,y,i;
 
       // fix row height and column width so that different elements won't resize them
-      for(x=0;x<8;x++)
-          layout.setColumnWidth(x, 65);
+      for(i=0;i<gridSize;i++) {
+          layout.setColumnWidth(i, 65);
+          layout.setRowHeight(    i, 65);
+      };
 
-      for(y=0;y<8;y++)
-          layout.setRowHeight(y, 65);
-
-
-      for (x=0; x<8; x++)
+      for (x=0; x<gridSize; x++)
       {
         //table_state[y][x] = null;
 
@@ -269,14 +334,14 @@ qx.Class.define("qoox_chess.Application",
         layout.setRowFlex(x, 0);
 
 
-        for (y=0; y<8; y++) {
+        for (y=0; y<gridSize; y++) {
 
 
 
           var piece;
           var composite = new qx.ui.container.Composite(new qx.ui.layout.Grow());
           box.add(composite,{row: y, column: x});
-		  var newcell   = this.getNewWidget( (((x%2)+(y%2))%2!=0) ? "black":"white" , x , y);
+          var newcell   = this.getNewWidget( (((x%2)+(y%2))%2!=0) ? "black":"white" , x , y);
 
           // (x,y) coordinates on the board
           newcell.xc = x;
@@ -295,6 +360,7 @@ qx.Class.define("qoox_chess.Application",
           // listener installed on it)
 
 
+          var context = this;
           newcell.addListener("drop", function(e) {
 
                   var moved_piece = e.getRelatedTarget();
@@ -303,40 +369,32 @@ qx.Class.define("qoox_chess.Application",
                   var legal = false;
 
 
-				  try {
-					  var req = new qx.io.remote.Request(qx.core.Setting.server_url, "POST", "application/json");
+                  try {
+                      //var req = new qx.io.remote.Request(qx.core.Setting.server_url, "POST", "application/json");
+                      var req = context.makeRequest("POST");
 
-					  var data = {
-							player_id: context.id,
-							messagetype: "newmove",
-							piece: moved_piece.piece_type,
-							color: moved_piece.player,
-							startpos: [oldspot.yc,oldspot.xc],
-							  endpos: [   spot.yc,   spot.xc]
-					  };
+                      var strdata = qx.util.Serializer.toJson({
+                            player_id: context.id,
+                            messagetype: "newmove",
+                            piece: moved_piece.piece_type,
+                            color: moved_piece.player,
+                            startpos: [oldspot.yc,oldspot.xc],
+                              endpos: [   spot.yc,   spot.xc]
+                      });
 
-					  var strdata = qx.util.Serializer.toJson(data);
-					  //ask server if move is legal
-					  req.setData(strdata);
-					  req.addListener("completed", function(e) { 
-								  var data = e.getContent();
-								  if(data.move_okay) {
-									  oldspot.piece = null;
-									  spot.piece = moved_piece;
-
-									  this.debug("move sent to server");
-									  spot.belongingComposite.add(moved_piece);
-
-
-									  moved_piece.composite = spot.belongingComposite;
-									  moved_piece.oldspot = spot;//always last
-								  } else
-									  alert("server says the move is not legal");
-							  });
-					  req.send();
-				  } catch(e) {
-					  alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
-				  };
+                      //ask server if move is legal
+                      req.setData(strdata);
+                      req.addListener("completed", function(e) { 
+                                  var data = e.getContent();
+                                  if(data.move_okay)
+                                    this.updateSpotPiece(oldspot,spot,moved_piece);
+                                  else
+                                      alert("server says the move is not legal");
+                              });
+                      req.send();
+                  } catch(e) {
+                      alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
+                  };
 
           });
 
@@ -348,8 +406,10 @@ qx.Class.define("qoox_chess.Application",
           // from here onwards y can only be in {0,1,6,7}
 
 
-          //y==1 or y==6
-          //pawns
+
+
+
+
 
 
 
@@ -364,11 +424,7 @@ qx.Class.define("qoox_chess.Application",
                   piece.piece_type = typeregex.exec(img_name);
                   if(piece.piece_type) {
                       piece.piece_type = piece.piece_type[0];
-                      if(y == 0) {
-                          piece.player = "white";
-                      } else {//y==7
-                          piece.player = "black";
-                      };
+                      piece.player = (y==0)?"white":"black";
                   };
               };
           } else {//just pawns
@@ -381,12 +437,7 @@ qx.Class.define("qoox_chess.Application",
                                : "pawn.PNG"
                               )
                           );
-              if(y==1) {
-                  piece.player = "white";
-              } else {//y==6
-                  piece.player = "black";
-              };
-
+              piece.player = (y==1)?"white":"black";
               piece.piece_type = "pawn";
           };
 
@@ -399,8 +450,14 @@ qx.Class.define("qoox_chess.Application",
                             function(e) { e.addAction("move"); }
                            );
 
-          piece.oldspot = newcell;
+          piece.oldspot = newcell;//the current spot of that piece
           newcell.piece = piece;
+
+          if(piece.player == "white") {//actually just the opposite of the current player
+
+          };
+
+
           composite.add(piece);
         }
       };
