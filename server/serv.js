@@ -144,7 +144,7 @@ function disconnectPlayer(name) {
 
 function checkPlayersAlive() {
     var rightNow = new Date();
-    sys.puts("running checkPlayersAlive()\n");
+    //sys.puts("running checkPlayersAlive()\n");
     for(name in players)
         if(rightNow.getTime() - players[name].lastping.getTime() > 1000*ping_timeout)
             disconnectPlayer(name);

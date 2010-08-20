@@ -141,44 +141,48 @@ qx.Class.define("qoox_chess.Application",
     
 
     //qx.core.Setting.server_url <-- it takes this from config.json(in project directory)
-        var context = this;
         try{
             var req = this.makeRequest("GET");
 
             req.setParameter("messagetype"    ,"newuser"                );
             req.setParameter("name"            ,this.getPlayerName()    );
 
+
             req.addListener("completed", function(e) { 
-                    var data = e.getContent();
-                    //alert(qx.util.Serializer.toJson(e.getContent())); 
 
-                    if(data.id) {
-                        context.id = data.id;
-                        context.connected = true;
+					try {
+						var data = e.getContent();
+						//alert(qx.util.Serializer.toJson(e.getContent())); 
 
-                        var timer = qx.util.TimerManager.getInstance();
-                        timer.start(function(userData, timerId)
-                                    { 
-                                        context.tellServerImAlive(); 
-                                        context.repopulatePlayerList();
-                                        //TODO: should also ask for new Players List but if it hasn't changed just send something
-                                        //saying it hasn't changed instead of all the list.
-                                    },
-                                    3000,
-                                    this,
-                                    { count: 0 }
-                        );
+						//debugger;
+						if(data.messagetype == "error") {
+							throw data;
+							//alert("error: "+ data.description);
+						};
 
-                        intercept();
+						this.id = this.getPlayerName();
+						this.connected = true;
 
-                    } else if(data.messagetype == "error") {
-
-
-
-                        alert("error: "+ data.description);
-                    };
-                    //alert("You've been just registred in the server with id="+context.id);
-            });
+						var timer = qx.util.TimerManager.getInstance();
+						timer.start(function(userData, timerId)
+									{ 
+										this.tellServerImAlive(); 
+										this.repopulatePlayerList();
+										//TODO: should also ask for new Players List but if it hasn't changed just send something
+										//saying it hasn't changed instead of all the list.
+										
+										if (++userData.count == 3)
+											timer.stop(timerId);
+									},
+									3000,
+									this,
+									{ count: 0 }
+						);
+						intercept();
+					}catch(e) {
+						console.log("error: "+e.description);
+					};
+            },this);
 
             // notify server that a new player has joined
             // server will assign him a new id
@@ -230,7 +234,7 @@ qx.Class.define("qoox_chess.Application",
 
 
 			  client.subscribe('/comet', function(message) {
-					  alert('Got a message: ' + message.text);
+					  //alert('Got a message: ' + message.text);
 			  });
 
 			  client.publish('/comet', {
@@ -365,9 +369,9 @@ qx.Class.define("qoox_chess.Application",
 
                   var moved_piece = e.getRelatedTarget();
                   var spot        = this;//where it is placed( where it is dropped )
+
                   var oldspot = moved_piece.oldspot;// where the moved piece was placed before dragging started
                   var legal = false;
-
 
                   try {
                       //var req = new qx.io.remote.Request(qx.core.Setting.server_url, "POST", "application/json");
@@ -385,12 +389,15 @@ qx.Class.define("qoox_chess.Application",
                       //ask server if move is legal
                       req.setData(strdata);
                       req.addListener("completed", function(e) { 
+
+							      
+								  debugger;
                                   var data = e.getContent();
                                   if(data.move_okay)
-                                    this.updateSpotPiece(oldspot,spot,moved_piece);
+                                    context.updateSpotPiece(oldspot,spot,moved_piece);
                                   else
                                       alert("server says the move is not legal");
-                              });
+                              },this);
                       req.send();
                   } catch(e) {
                       alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
