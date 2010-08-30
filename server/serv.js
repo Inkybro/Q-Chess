@@ -122,7 +122,7 @@ var fayeServer = new Faye.NodeAdapter({
 });
 
 
-
+var client = new Faye.Client('http://localhost:8000/comet');
 
 
 
@@ -164,7 +164,7 @@ function checkPlayersAlive() {
 
 
 
-setInterval( function(){checkPlayersAlive();} , 1000 );
+//setInterval( function(){checkPlayersAlive();} , 1000 );
 
 
 
@@ -418,6 +418,8 @@ exports.server = http.createServer(function (req, res) {
                         switch(params.query['messagetype']){
                             case "newuser":
                                 newUser(res,params);
+								//client.publish({
+								//});
                                 return;
                             case "get_players_list":
                                 getPlayersList(res);

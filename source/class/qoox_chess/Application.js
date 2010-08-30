@@ -46,9 +46,9 @@ qx.Class.define("qoox_chess.Application",
         check: "Boolean",
         init: false
     },
-    playerList: {
-        check: "Object"
-    }
+    playerList:     { check: "Object" },
+    chatList:       { check: "Object" },
+    messageField:   { check: "Object" }
 
   },
   
@@ -56,6 +56,7 @@ qx.Class.define("qoox_chess.Application",
   {
     //ajaxurl: "http://192.168.0.2",
     id: -1,// id of player that has been connected to the server
+	faye_client: null,
 
 
     
@@ -80,9 +81,13 @@ qx.Class.define("qoox_chess.Application",
     },
     makePlayerList: function() {
         var configList = new qx.ui.form.List;
-        this.getRoot().add(configList, {left:600,top:0});
+		this.getRoot().add(
+				new qx.ui.basic.Label("Player list:"),
+				{left:600,top:0}
+		);
+        this.getRoot().add(configList, {left:600,top:20});
         configList.setScrollbarX("on");
-        configList.set({ height: 280, width: 150 });
+        configList.set({ height: 260, width: 150 });
 
         this.setPlayerList(configList);
         //var item = new qx.ui.form.ListItem("Player1");
@@ -92,6 +97,38 @@ qx.Class.define("qoox_chess.Application",
 
         this.repopulatePlayerList();
     },
+	makeChatList: function() {
+        var chatList = new qx.ui.form.List;
+		var messageField = new qx.ui.form.TextField("Kasparov").set( 
+				{
+                    maxLength: 50
+				});
+
+		messageField.addListener("keyup",function(e){
+				if(e.getKeyIdentifier() === "Enter") {
+						 this.faye_client.publish('/comet', {
+                                 text:   messageField.getValue(),
+								 sender: this.getPlayerName()
+						 });
+						 messageField.setValue("");
+				};
+		},this);
+	    messageField.setWidth(200);
+
+        chatList.set({ height: 280, width: 300 });
+        chatList.setScrollbarX("on");
+
+        this.setChatList(chatList);
+		this.setMessageField(messageField);
+
+
+		this.getRoot().add(
+				new qx.ui.basic.Label("Lobby chat:"),
+				{left:600,top:280}
+		);
+        this.getRoot().add(chatList,     { left:600,top:300});
+		this.getRoot().add(messageField, { left:600,top:590});
+	},
     repopulatePlayerList: function() {
         var req = this.makeRequest("GET");
 
@@ -218,6 +255,8 @@ qx.Class.define("qoox_chess.Application",
               //alert("intercept!");
               context.makeGrid();
               context.makePlayerList();
+			  //debugger;
+              context.makeChatList();
               win.close();
               //alert("now player list");
           });//send req to server telling him what your name is
@@ -229,12 +268,20 @@ qx.Class.define("qoox_chess.Application",
 
 		  try {
 
-
+			  var context = this;
 			  var client  = new Faye.Client("http://localhost/comet",{timeout: 120});
+			  this.faye_client = client;
 
 
 			  client.subscribe('/comet', function(message) {
-					  //alert('Got a message: ' + message.text);
+					  if(!message.sender) {
+					      console.log(message);
+					      return;
+					  };
+					  context.getChatList().add(new qx.ui.form.ListItem(
+							  "<"+message.sender+">  "+
+							  message.text
+					  ));
 			  });
 
 			  client.publish('/comet', {
@@ -391,7 +438,7 @@ qx.Class.define("qoox_chess.Application",
                       req.addListener("completed", function(e) { 
 
 							      
-								  debugger;
+								  //debugger;
                                   var data = e.getContent();
                                   if(data.move_okay)
                                     context.updateSpotPiece(oldspot,spot,moved_piece);
