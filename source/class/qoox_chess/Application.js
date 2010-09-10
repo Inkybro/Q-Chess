@@ -59,10 +59,16 @@ qx.Class.define("qoox_chess.Application",
 	faye_client: null,
 	
 
+
+	//controls
 	listPlayers:null,
 	listChat:null,
 	textChatMessage:null,
-    
+	gridChess: null,
+
+
+
+    //methods
     makeRequest: function(verb) {
         var req = 
             new qx.io.remote.Request(
@@ -77,10 +83,13 @@ qx.Class.define("qoox_chess.Application",
     makeGrid: function() {
         var layout = new qx.ui.layout.Grid();
         layout.setSpacing(20);
+
         var container = new qx.ui.container.Composite(layout);
         container.setPadding(20);
         this.getRoot().add(container, {left:0,top:0}        );
-        container.add(this.getChessGrid(this.getRoot()), {row: 0, column: 0});
+
+		this.gridChess = this.makeChessGrid();
+        container.add(this.gridChess, {row: 0, column: 0});
     },
     makePlayerList: function() {
         var configList = new qx.ui.form.List;
@@ -213,17 +222,18 @@ qx.Class.define("qoox_chess.Application",
 									{ 
 										this.tellServerImAlive(); 
 										//this.repopulatePlayerList();
-										//TODO: should also ask for new Players List but if it hasn't changed just send something
-										//saying it hasn't changed instead of all the list.
-										
-										if (++userData.count == 3)
-											timer.stop(timerId);
+
+
+
+										//if (++userData.count == 3)
+											//timer.stop(timerId);
 									},
 									3000,
 									this,
 									{ count: 0 }
 						);
 						intercept();
+
 					}catch(e) {
 						console.log("error: "+e.description);
 					};
@@ -272,6 +282,7 @@ qx.Class.define("qoox_chess.Application",
 			   * First get current players, and then tell everyone that you've also joined
 			   *
 			   */
+			  //debugger;
 			  context.repopulatePlayerList();
 			  context.faye_client.publish('/comet', {
 					    sender: context.getPlayerName(),
@@ -296,12 +307,16 @@ qx.Class.define("qoox_chess.Application",
 			  this.faye_client = client;
 
 
+
+
 			  client.subscribe('/comet', function(message) {
 
 					  if(!message.sender) {
 					      console.log(message);
 					      return;
 					  };
+
+					  context.debug(message);
 
 					  switch(message.type) {
 						  case "chatMessage":
@@ -317,6 +332,10 @@ qx.Class.define("qoox_chess.Application",
 								      return;
 								  context.getPlayerList().add(new qx.ui.form.ListItem(message.name));
 								  break;
+						  case "lostPlayerConnection":
+							      //TODO: delete player from player List
+								  //console.log("server lost connection with player "+message.name);
+						          break;
 						  default:;
 					  };
 			  });
@@ -364,7 +383,7 @@ qx.Class.define("qoox_chess.Application",
     },
 
     //TODO: table_state will offer easy access to the grid pieces
-    getChessGrid : function()
+    makeChessGrid : function()
     {
       //var table_state;// bi-dimensional 8x8 array with table state
       var context = this;

@@ -27,6 +27,7 @@ var sys   = require('sys'               ),
     //process = require('process');
 
 
+var server_url = "";
 var players        = new Array();
 var ping_timeout = 15;//seconds after which disconnect if no ping
 var config;//qooxdoo config file(will contain address to node.js server)
@@ -122,7 +123,7 @@ var fayeServer = new Faye.NodeAdapter({
 });
 
 
-var client = new Faye.Client('http://localhost:8000/comet');
+var client = null;
 
 
 
@@ -130,11 +131,21 @@ function disconnectPlayer(name) {
 
     sys.puts("player "+name+" was disconnected(ping timeout) ");
 
+
+
+
     if(players[name].plays_with) {
         //TODO
         //send a message through Comet to -> players[name].plays_with
         //telling him that the other player left
     };
+
+	client.publish("/comet",{
+			 sender: "Server",
+             type: "lostPlayerConnection",
+			 name: name
+	});
+
     delete players[name];
 
     // notify other player that his mate left
@@ -164,7 +175,6 @@ function checkPlayersAlive() {
 
 
 
-//setInterval( function(){checkPlayersAlive();} , 1000 );
 
 
 
@@ -538,8 +548,15 @@ fs.readFile('../config.json',
 		data = data.replace(/\/\*[^*]+\*\//gm,"");
 
 		config = JSON.parse(data.toString());
-		exports.server.listen(80,config.settings.server_url);//fire up server
+
+
+		server_url = config.settings.server_url;
+
+		client = new Faye.Client("http://"+server_url+":8000/faye");
+
+		exports.server.listen(80,server_url);//fire up server
 		sys.puts("started a server");
 		});
 
 
+setInterval( function(){checkPlayersAlive();} , 1000 );
