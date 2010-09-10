@@ -57,8 +57,11 @@ qx.Class.define("qoox_chess.Application",
     //ajaxurl: "http://192.168.0.2",
     id: -1,// id of player that has been connected to the server
 	faye_client: null,
+	
 
-
+	listPlayers:null,
+	listChat:null,
+	textChatMessage:null,
     
     makeRequest: function(verb) {
         var req = 
@@ -95,7 +98,7 @@ qx.Class.define("qoox_chess.Application",
         //configList.add(item);
 
 
-        this.repopulatePlayerList();
+        //this.repopulatePlayerList();
     },
 	makeChatList: function() {
         var chatList = new qx.ui.form.List;
@@ -107,8 +110,9 @@ qx.Class.define("qoox_chess.Application",
 		messageField.addListener("keyup",function(e){
 				if(e.getKeyIdentifier() === "Enter") {
 						 this.faye_client.publish('/comet', {
+								 sender: this.getPlayerName(),
                                  text:   messageField.getValue(),
-								 sender: this.getPlayerName()
+								 type: "chatMessage"
 						 });
 						 messageField.setValue("");
 				};
@@ -129,6 +133,8 @@ qx.Class.define("qoox_chess.Application",
         this.getRoot().add(chatList,     { left:600,top:300});
 		this.getRoot().add(messageField, { left:600,top:590});
 	},
+
+	//repopulatePlayerList won't be needed anymore
     repopulatePlayerList: function() {
         var req = this.makeRequest("GET");
 
@@ -145,6 +151,8 @@ qx.Class.define("qoox_chess.Application",
         });
         req.send();
     },
+
+
     tellServerImAlive: function(){
         /*
          * tell the server that the client is alive and
@@ -204,7 +212,7 @@ qx.Class.define("qoox_chess.Application",
 						timer.start(function(userData, timerId)
 									{ 
 										this.tellServerImAlive(); 
-										this.repopulatePlayerList();
+										//this.repopulatePlayerList();
 										//TODO: should also ask for new Players List but if it hasn't changed just send something
 										//saying it hasn't changed instead of all the list.
 										
@@ -257,6 +265,21 @@ qx.Class.define("qoox_chess.Application",
               context.makePlayerList();
 			  //debugger;
               context.makeChatList();
+
+
+			  /*
+			   *
+			   * First get current players, and then tell everyone that you've also joined
+			   *
+			   */
+			  context.repopulatePlayerList();
+			  context.faye_client.publish('/comet', {
+					    sender: context.getPlayerName(),
+						type: "newPlayer",
+					    name: context.getPlayerName()
+			  });
+
+
               win.close();
               //alert("now player list");
           });//send req to server telling him what your name is
@@ -274,18 +297,28 @@ qx.Class.define("qoox_chess.Application",
 
 
 			  client.subscribe('/comet', function(message) {
+
 					  if(!message.sender) {
 					      console.log(message);
 					      return;
 					  };
-					  context.getChatList().add(new qx.ui.form.ListItem(
-							  "<"+message.sender+">  "+
-							  message.text
-					  ));
-			  });
 
-			  client.publish('/comet', {
-						text: 'welcome to the chess lobby'
+					  switch(message.type) {
+						  case "chatMessage":
+								  context.getChatList().add(
+									  new qx.ui.form.ListItem(
+										  "<"+message.sender+">  "+
+										  message.text
+									  )
+								  );
+								  break;
+						  case "newPlayer":
+						          if(message.sender == context.getPlayerName())
+								      return;
+								  context.getPlayerList().add(new qx.ui.form.ListItem(message.name));
+								  break;
+						  default:;
+					  };
 			  });
 
 
