@@ -8,6 +8,8 @@
 # and it will start your current script inside Qooxdoo playground and
 # copy the shortened URL to your clipboard
 #
+# needs xsel installed to copy text to clipboard
+#
 
 
 use strict;

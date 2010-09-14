@@ -22,6 +22,11 @@ the qooxdoo files and images).
 
 In config.json change settings.server_url to what you need.
 
+Install npm on your system and install faye afterwards with it.
+(npm install faye) and then symlink the faye browser component while in qchess/source/
+ln -s /usr/local/lib/node/.npm/faye/0.5.2/package/faye-browser-min.js faye-browser-min.js
+
+
 Running
 =======
 
@@ -31,6 +36,7 @@ chmod +x generate.py
 ./generate.py build
 node serv.js &
 firefox http://localhost/build/index.html
+
 
 
 

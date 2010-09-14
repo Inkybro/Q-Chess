@@ -21,7 +21,7 @@ var sys   = require('sys'               ),
     http  = require('http'              ),
     url   = require('url'               ),
     fs    = require('fs'                ),
-    faye  = require('../faye/faye-node' ),
+    faye  = require('faye' ),
     chess = require('./chess'           ),
     path  = require('path'              );
     //process = require('process');
@@ -117,7 +117,7 @@ var config;//qooxdoo config file(will contain address to node.js server)
 
 
 
-var fayeServer = new Faye.NodeAdapter({
+var fayeServer = new faye.NodeAdapter({
     mount:    '/comet',
     timeout:  45
 });
@@ -152,6 +152,12 @@ function disconnectPlayer(name) {
     // TODO: cleaning up lastping,ids,players,tables
     // post-condition: after this , all arrays with names or ids should be null or undefined for that player id/name
 };
+
+
+
+
+
+
 
 function checkPlayersAlive() {
     var rightNow = new Date();
@@ -198,6 +204,13 @@ function getPlayersList(res) {
             );
 };
 
+
+
+
+
+
+
+
 function errorMessage(message,res) {
         res.writeHead(200, {'Content-Type': 'application/json'});
         res.end(
@@ -209,6 +222,12 @@ function errorMessage(message,res) {
                 )
             );   
 };
+
+
+
+
+
+
 
 function newUser(res,params) {
     sys.puts("new user message\n");
@@ -239,6 +258,14 @@ function newUser(res,params) {
                 )
            );// send him a code also ? (nonce ?)
 };
+
+
+
+
+
+
+
+
 
 function newMove(res,data) {
     var id = data.player_id;
@@ -359,11 +386,8 @@ function acceptRequest(data,res) {
 
 //this is exported by this module
 exports.server = http.createServer(function (req, res) {
-        if (fayeServer.call(req, res)) // <-- treating comet messages
-            return;
-
-
-
+        //if (fayeServer.call(req, res)) // <-- treating comet messages
+            //return;
 
         var data = "";//the data sent through the request to the server
         req.addListener('data', function (chunk) {
@@ -448,9 +472,13 @@ exports.server = http.createServer(function (req, res) {
 
 
 
+
+
+
                     var path_pieces = process.cwd().split("/");
                     path_pieces.pop(); //pop current directory, need parent
-                    var filename = path.join( path_pieces.join("/") + "/", uri);
+
+                    var filename = path.join( path_pieces.join("/"), uri);
                     //sys.puts("uri =" +uri+"\n");
                     // if the file exists 200 and serve it, otherwise 404 or 500
                     path.exists(filename, 
@@ -552,11 +580,13 @@ fs.readFile('../config.json',
 
 		server_url = config.settings.server_url;
 
-		client = new Faye.Client("http://"+server_url+":8000/faye");
+		client = new faye.Client("http://"+server_url+"/faye");
 
 		exports.server.listen(80,server_url);//fire up server
 		sys.puts("started a server");
 		});
 
 
+fayeServer.attach(exports.server);
 setInterval( function(){checkPlayersAlive();} , 1000 );
+

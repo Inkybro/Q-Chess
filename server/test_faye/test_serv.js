@@ -3,28 +3,29 @@ var sys   = require('sys'               ),
 	http  = require('http'              ),
 	url   = require('url'               ),
 	fs    = require('fs'                ),
-	faye  = require('../faye/faye-node' ),
-	chess = require('./chess'           ),
+	faye  = require('faye' ),
 	path  = require('path'              );
 	//process = require('process');
 
 
-var fayeClient = new Faye.Client("http://127.0.0.1:8000/faye");
-
-var fayeServer = new Faye.NodeAdapter({
+var fayeServer = new faye.NodeAdapter({
     mount:    '/comet',
     timeout:  45
 });
 
+var fayeClient = null;
 
 var cnt = 0;// count of the messages sent on the channel
 
 
 setInterval(
 		function(){ 
+		    if(!fayeClient)
+				return;
 		    
 		    sys.puts(++cnt + " just published another message on channel \"comet\"\n");
-			fayeClient.publish("/comet",
+			fayeClient.publish(
+				"/somechannel",
 				{
 					data: "yeah"+cnt
 				}
@@ -37,9 +38,11 @@ setInterval(
 
 
 var server = http.createServer(function (req, res) {
-        if (fayeServer.call(req, res)) 
-            return;
-
+		sys.puts("check this out, I've received a request\n");
 });
 
-server.listen(80,"127.0.0.1");
+fayeClient = new faye.Client("http://localhost/somechannel");
+
+fayeServer.attach(server);
+
+server.listen(80,"localhost");

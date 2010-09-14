@@ -1,16 +1,13 @@
-
-
 var sys   = require('sys'               ),
 	http  = require('http'              ),
 	url   = require('url'               ),
 	fs    = require('fs'                ),
-	faye  = require('../faye/faye-node' ),
-	chess = require('./chess'           ),
+	faye  = require('faye' ),
 	path  = require('path'              );
 
-var fayeClient = new Faye.Client("http://localhost:8000/faye");
+var fayeClient = new faye.Client("http://localhost/comet");
 
 
-fayeClient.subscribe("/comet",function(msg){
+fayeClient.subscribe("/somechannel",function(msg){
 		sys.puts(msg.data+"\n");
 });
