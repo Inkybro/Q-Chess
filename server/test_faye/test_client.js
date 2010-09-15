@@ -5,9 +5,10 @@ var sys   = require('sys'               ),
 	faye  = require('faye' ),
 	path  = require('path'              );
 
-var fayeClient = new faye.Client("http://localhost/comet");
+var fayeClient = new faye.Client("http://localhost:80/comet");
 
 
 fayeClient.subscribe("/somechannel",function(msg){
+		sys.puts("received\n");
 		sys.puts(msg.data+"\n");
 });

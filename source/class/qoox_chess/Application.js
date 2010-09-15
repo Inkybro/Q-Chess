@@ -118,7 +118,7 @@ qx.Class.define("qoox_chess.Application",
 
 		messageField.addListener("keyup",function(e){
 				if(e.getKeyIdentifier() === "Enter") {
-						 this.faye_client.publish('/comet', {
+						 this.faye_client.publish('/channel', {
 								 sender: this.getPlayerName(),
                                  text:   messageField.getValue(),
 								 type: "chatMessage"
@@ -284,7 +284,7 @@ qx.Class.define("qoox_chess.Application",
 			   */
 			  //debugger;
 			  context.repopulatePlayerList();
-			  context.faye_client.publish('/comet', {
+			  context.faye_client.publish('/channel', {
 					    sender: context.getPlayerName(),
 						type: "newPlayer",
 					    name: context.getPlayerName()
@@ -303,13 +303,13 @@ qx.Class.define("qoox_chess.Application",
 		  try {
 
 			  var context = this;
-			  var client  = new Faye.Client("http://localhost/comet",{timeout: 120});
+			  var client  = new Faye.Client("http://localhost:80/comet",{timeout: 120});
 			  this.faye_client = client;
 
 
 
 
-			  client.subscribe('/comet', function(message) {
+			  client.subscribe('/channel', function(message) {
 
 					  if(!message.sender) {
 					      console.log(message);
@@ -334,7 +334,15 @@ qx.Class.define("qoox_chess.Application",
 								  break;
 						  case "lostPlayerConnection":
 							      //TODO: delete player from player List
-								  //console.log("server lost connection with player "+message.name);
+								  console.log("server lost connection with player "+message.name);
+
+						          //player that lost connection with the server is taken out of the list
+								  context.getPlayerList().remove(
+									  context.getPlayerList().findItem(
+										  message.name
+									  )
+								  );
+
 						          break;
 						  default:;
 					  };
@@ -474,10 +482,10 @@ qx.Class.define("qoox_chess.Application",
 
                   try {
                       //var req = new qx.io.remote.Request(qx.core.Setting.server_url, "POST", "application/json");
-                      var req = context.makeRequest("POST");
+                      var req = this.makeRequest("POST");
 
                       var strdata = qx.util.Serializer.toJson({
-                            player_id: context.id,
+                            player_id: this.id,
                             messagetype: "newmove",
                             piece: moved_piece.piece_type,
                             color: moved_piece.player,
@@ -501,8 +509,7 @@ qx.Class.define("qoox_chess.Application",
                   } catch(e) {
                       alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
                   };
-
-          });
+          },this);
 
 
           composite.add(newcell);

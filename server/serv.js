@@ -140,7 +140,7 @@ function disconnectPlayer(name) {
         //telling him that the other player left
     };
 
-	client.publish("/comet",{
+	client.publish("/channel",{
 			 sender: "Server",
              type: "lostPlayerConnection",
 			 name: name
@@ -580,7 +580,7 @@ fs.readFile('../config.json',
 
 		server_url = config.settings.server_url;
 
-		client = new faye.Client("http://"+server_url+"/faye");
+		client = new faye.Client("http://"+server_url+":80/comet");
 
 		exports.server.listen(80,server_url);//fire up server
 		sys.puts("started a server");

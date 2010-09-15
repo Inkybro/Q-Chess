@@ -41,7 +41,7 @@ var server = http.createServer(function (req, res) {
 		sys.puts("check this out, I've received a request\n");
 });
 
-fayeClient = new faye.Client("http://localhost/somechannel");
+fayeClient = new faye.Client("http://localhost:80/comet");
 
 fayeServer.attach(server);
 
