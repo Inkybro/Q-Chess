@@ -1,7 +1,4 @@
 
-
-
-
 echo "Registering someguy and othergirl ..."
 GET "127.0.0.1?messagetype=newuser&name=someguy" # registers as someguy
 echo ""

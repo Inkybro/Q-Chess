@@ -45,11 +45,12 @@ qx.Class.define("qoox_chess.Application",
     connected: {//after calling initGame() this will be true if it has connected to the server or false otherwise
         check: "Boolean",
         init: false
-    },
+    }
+	/*
     playerList:     { check: "Object" },
     chatList:       { check: "Object" },
     messageField:   { check: "Object" }
-
+	*/
   },
   
   members :
@@ -101,7 +102,7 @@ qx.Class.define("qoox_chess.Application",
         configList.setScrollbarX("on");
         configList.set({ height: 260, width: 150 });
 
-        this.setPlayerList(configList);
+        this.listPlayers = configList;
         //var item = new qx.ui.form.ListItem("Player1");
         //item.setEnabled(true);
         //configList.add(item);
@@ -131,8 +132,8 @@ qx.Class.define("qoox_chess.Application",
         chatList.set({ height: 280, width: 300 });
         chatList.setScrollbarX("on");
 
-        this.setChatList(chatList);
-		this.setMessageField(messageField);
+        this.listChat = chatList;
+		this.textChatMessage =messageField;
 
 
 		this.getRoot().add(
@@ -150,12 +151,12 @@ qx.Class.define("qoox_chess.Application",
         var context = this;
         req.setParameter("messagetype"    ,"get_players_list"                );
         req.addListener("completed", function(e) { 
-                context.getPlayerList().removeAll();
+                context.listPlayers.removeAll();
                 var data = e.getContent();
                 for(i in data.names) {
                     var item = new qx.ui.form.ListItem(data.names[i]);
                     item.setEnabled(true);
-                    context.getPlayerList().add(item);
+                    context.listPlayers.add(item);
                 }
         });
         req.send();
@@ -320,7 +321,7 @@ qx.Class.define("qoox_chess.Application",
 
 					  switch(message.type) {
 						  case "chatMessage":
-								  context.getChatList().add(
+								  context.listChat.add(
 									  new qx.ui.form.ListItem(
 										  "<"+message.sender+">  "+
 										  message.text
@@ -330,15 +331,15 @@ qx.Class.define("qoox_chess.Application",
 						  case "newPlayer":
 						          if(message.sender == context.getPlayerName())
 								      return;
-								  context.getPlayerList().add(new qx.ui.form.ListItem(message.name));
+								  context.listPlayers.add(new qx.ui.form.ListItem(message.name));
 								  break;
 						  case "lostPlayerConnection":
 							      //TODO: delete player from player List
 								  console.log("server lost connection with player "+message.name);
 
 						          //player that lost connection with the server is taken out of the list
-								  context.getPlayerList().remove(
-									  context.getPlayerList().findItem(
+								  context.listPlayers.remove(
+									  context.listPlayers.findItem(
 										  message.name
 									  )
 								  );
