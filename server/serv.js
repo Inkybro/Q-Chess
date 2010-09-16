@@ -334,8 +334,13 @@ function requestMatch(data,res) {
         return;
     };
 
-
     players[p2].requests.push(p1);
+
+	client.publish("/playerChannel/"+p2,{
+			 sender: "Server",
+             type: "requestMatch",
+			 name: p1
+	});
 
     res.writeHead(200, {'Content-Type': 'application/json'});
     res.end( 
@@ -380,9 +385,14 @@ function acceptRequest(data,res) {
     res.end( 
             JSON.stringify( {request_ok: 1})
            );
+    
+	client.publish("/playerChannel/"+data.requester,{
+			 sender: "Server",
+             type: "acceptRequest",
+			 name: data.player
+	});
+
 };
-
-
 
 //this is exported by this module
 exports.server = http.createServer(function (req, res) {

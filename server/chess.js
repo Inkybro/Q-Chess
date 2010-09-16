@@ -133,18 +133,32 @@ function Table() {
 
 
 
-			var color = "white";
-			if(this.table[starty][startx].charAt(0) == 'b')
-				color = "black";
+			var color = "black";
+			if(this.table[starty][startx].charAt(0) == 'w')
+				color = "white";
+
+			sys.puts(color);
 
 			// this case is for black
 			switch(piecename) {
 				case "pawn":
 					if(
-							starty - endy == 1 &&
-							dx == 0
-					  )//one row higher
+							(//one row higher
+							 color == "black" &&
+							 starty - endy == 1 &&
+							 dx == 0
+							) 
+							||
+							(//one row lower
+							 color == "white" &&
+							 starty - endy == -1 &&
+							 dx == 0
+							)
+					  )
 						return true;
+
+
+
 					break;
 				case "knight":
 					//no need to check dx or dy outside bounds because

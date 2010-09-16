@@ -42,15 +42,18 @@ qx.Class.define("qoox_chess.Application",
                       };
           }
       },
+	side: { 
+			check: function(value) {
+					   return
+						   value == "white" ||
+						   value == "black";
+				   },
+			init: "white"
+		  },
     connected: {//after calling initGame() this will be true if it has connected to the server or false otherwise
         check: "Boolean",
         init: false
     }
-	/*
-    playerList:     { check: "Object" },
-    chatList:       { check: "Object" },
-    messageField:   { check: "Object" }
-	*/
   },
   
   members :
@@ -58,16 +61,64 @@ qx.Class.define("qoox_chess.Application",
     //ajaxurl: "http://192.168.0.2",
     id: -1,// id of player that has been connected to the server
 	faye_client: null,
+
 	
 
 
 	//controls
-	listPlayers:null,
-	listChat:null,
-	textChatMessage:null,
-	gridChess: null,
+	listPlayers:     null, // list with players connected to the server
+	listChat:        null, // list with messages exchanged by the players
+    listRequests:    null, // list with requests to play from other players
+	textChatMessage: null, // text field with the message for the chat list
+	gridChess:       null, // qx.ui.container.Composite object that stores the board
+	arrayBoard:      null, // 2D array with the elements
+	opponent:        null, // string containing name of opponent
 
 
+
+	//set whose Turn it is now
+	//
+	//  it will work something like
+	//
+	//
+	// ajax_request("completed",function(){
+	// ...
+	// if(
+	//    move is valid
+	//    ) {
+	//       
+	//       gameTable.setTurn(side == "black" ? "white" : "black");
+	//
+	//       faye_client.publish("/playerChannel/"+this.opponent,
+	//			{
+	//			  type: "opponentMoved",
+	//			  name: this.opponent
+	//			}
+	//		 );
+	//
+	//    };
+	// });
+	//
+	// 
+	// faye_client.subscribe("/playerChannel/"+this.opponent,function(data) {
+	//       if(data.type=="opponentMoved"){
+	//		     gameTable.setTurn(side == "black" ? "white" : "black");
+	//       };
+	// });
+	//
+	//
+	//
+	setTurn: function(Side) {
+		var x,y;
+		for(x=0;x<8;x++) {
+			for(y=0;y<8;y++) {
+				if( this.arrayBoard[y][x].player == Side)
+					this.arrayBoard[y][x].setDraggable(true);
+				else
+					this.arrayBoard[y][x].setDraggable(false);
+			};
+		};
+	},
 
     //methods
     makeRequest: function(verb) {
@@ -87,7 +138,7 @@ qx.Class.define("qoox_chess.Application",
 
         var container = new qx.ui.container.Composite(layout);
         container.setPadding(20);
-        this.getRoot().add(container, {left:0,top:0}        );
+        this.getRoot().add(container, {left:30,top:0}        );
 
 		this.gridChess = this.makeChessGrid();
         container.add(this.gridChess, {row: 0, column: 0});
@@ -133,7 +184,7 @@ qx.Class.define("qoox_chess.Application",
         chatList.setScrollbarX("on");
 
         this.listChat = chatList;
-		this.textChatMessage =messageField;
+        this.textChatMessage =messageField;
 
 
 		this.getRoot().add(
@@ -144,6 +195,21 @@ qx.Class.define("qoox_chess.Application",
 		this.getRoot().add(messageField, { left:600,top:590});
 	},
 
+    makeRequestsList: function() {
+        var list = new qx.ui.form.List;
+		this.getRoot().add(
+				new qx.ui.basic.Label("Game requests:"),
+				{left:870,top:20}
+		);
+        this.getRoot().add(list, {left:870,top:40});
+        list.setScrollbarX("on");
+        list.set({ height: 260, width: 150 });
+
+        this.listRequests = list;
+    },
+
+
+
 	//repopulatePlayerList won't be needed anymore
     repopulatePlayerList: function() {
         var req = this.makeRequest("GET");
@@ -153,6 +219,7 @@ qx.Class.define("qoox_chess.Application",
         req.addListener("completed", function(e) { 
                 context.listPlayers.removeAll();
                 var data = e.getContent();
+				var i;
                 for(i in data.names) {
                     var item = new qx.ui.form.ListItem(data.names[i]);
                     item.setEnabled(true);
@@ -204,6 +271,7 @@ qx.Class.define("qoox_chess.Application",
 
 
             req.addListener("completed", function(e) { 
+					//debugger;
 
 					try {
 						var data = e.getContent();
@@ -259,6 +327,9 @@ qx.Class.define("qoox_chess.Application",
       this.base(arguments);
 
 
+	  this.arrayBoard = new Array;
+
+
       if(qx.core.Variant.isSet("qx.debug","on")) {
           qx.log.appender.Native;
           qx.log.appender.Console;
@@ -274,8 +345,9 @@ qx.Class.define("qoox_chess.Application",
               //alert("intercept!");
               context.makeGrid();
               context.makePlayerList();
-			  //debugger;
               context.makeChatList();
+              context.makeRequestsList();
+			  //debugger;
 
 
 			  /*
@@ -391,6 +463,51 @@ qx.Class.define("qoox_chess.Application",
           moved_piece.oldspot = spot;//always last
     },
 
+	__handlerPieceAttacked: function(e) {
+		  
+	},
+
+	classContext: null,
+
+	newcellDrop: function(e) {
+
+
+                  var moved_piece = e.getRelatedTarget();
+                  var spot        = e.getTarget();//where it is placed( where it is dropped )
+                  var oldspot = moved_piece.oldspot;// where the moved piece was placed before dragging started
+
+                  try {
+                      //var req = new qx.io.remote.Request(qx.core.Setting.server_url, "POST", "application/json");
+                      var req = this.makeRequest("POST");
+
+                      var strdata = qx.util.Serializer.toJson({
+                            player_id: this.id,
+                            messagetype: "newmove",
+                            piece: moved_piece.piece_type,
+                            color: moved_piece.player,
+                            startpos: [oldspot.yc,oldspot.xc],
+                              endpos: [   spot.yc,   spot.xc]
+                      });
+
+                      //ask server if move is legal
+                      req.setData(strdata);
+                      req.addListener("completed", function(e) { 
+
+							      
+								  //debugger;
+                                  var data = e.getContent();
+                                  if(data.move_okay)
+                                    this.updateSpotPiece(oldspot,spot,moved_piece);
+                                  else
+                                      alert("server says the move is not legal");
+                              },this);
+                      req.send();
+                  } catch(e) {
+                      alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
+                  };
+    },
+
+
     //TODO: table_state will offer easy access to the grid pieces
     makeChessGrid : function()
     {
@@ -425,7 +542,7 @@ qx.Class.define("qoox_chess.Application",
 
 
 
-      this._active = null;
+      //this._active = null;
 	  //which kind of piece except for pawns which are treated separately
       var typeregex = new RegExp("(rock|queen|bishop|knight|king)","");
 
@@ -456,6 +573,8 @@ qx.Class.define("qoox_chess.Application",
           var newcell   = this.getNewWidget( (((x%2)+(y%2))%2!=0) ? "black":"white" , x , y);
 
           // (x,y) coordinates on the board
+
+		  //debugger;
           newcell.xc = x;
           newcell.yc = y;
 
@@ -472,45 +591,8 @@ qx.Class.define("qoox_chess.Application",
           // listener installed on it)
 
 
-          var context = this;
-          newcell.addListener("drop", function(e) {
-
-                  var moved_piece = e.getRelatedTarget();
-                  var spot        = this;//where it is placed( where it is dropped )
-
-                  var oldspot = moved_piece.oldspot;// where the moved piece was placed before dragging started
-                  var legal = false;
-
-                  try {
-                      //var req = new qx.io.remote.Request(qx.core.Setting.server_url, "POST", "application/json");
-                      var req = this.makeRequest("POST");
-
-                      var strdata = qx.util.Serializer.toJson({
-                            player_id: this.id,
-                            messagetype: "newmove",
-                            piece: moved_piece.piece_type,
-                            color: moved_piece.player,
-                            startpos: [oldspot.yc,oldspot.xc],
-                              endpos: [   spot.yc,   spot.xc]
-                      });
-
-                      //ask server if move is legal
-                      req.setData(strdata);
-                      req.addListener("completed", function(e) { 
-
-							      
-								  //debugger;
-                                  var data = e.getContent();
-                                  if(data.move_okay)
-                                    context.updateSpotPiece(oldspot,spot,moved_piece);
-                                  else
-                                      alert("server says the move is not legal");
-                              },this);
-                      req.send();
-                  } catch(e) {
-                      alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
-                  };
-          },this);
+          this.classContext = this;
+          newcell.addListener("drop",this.newcellDrop,this);
 
 
           composite.add(newcell);
@@ -553,10 +635,14 @@ qx.Class.define("qoox_chess.Application",
                           );
               piece.player = (y==1)?"white":"black";
               piece.piece_type = "pawn";
+
+
           };
 
           //table_state[y][x] = piece;
 
+
+		  //this.arrayBoard[y][x] = piece;
 
           piece.setDraggable(true);
           piece.addListener(
@@ -566,6 +652,15 @@ qx.Class.define("qoox_chess.Application",
 
           piece.oldspot = newcell;//the current spot of that piece
           newcell.piece = piece;
+
+
+
+
+		  //when some other piece tried to attack it
+		  piece.setDroppable(true);
+		  piece.addListener("drop",this.__handlerPieceAttacked);
+
+
 
           if(piece.player == "white") {//actually just the opposite of the current player
 
