@@ -112,7 +112,7 @@ qx.Class.define("qoox_chess.Application",
 		var x,y;
 		for(x=0;x<8;x++) {
 			for(y=0;y<8;y++) {
-				if( this.arrayBoard[y][x].player == Side)
+				if( this.arrayBoard[y][x].color == Side)
 					this.arrayBoard[y][x].setDraggable(true);
 				else
 					this.arrayBoard[y][x].setDraggable(false);
@@ -452,19 +452,32 @@ qx.Class.define("qoox_chess.Application",
     },
 
 
+	//spot,oldspot are both composites, moved_piece is an image which sits inside oldspot
     updateSpotPiece: function(oldspot,spot,moved_piece) {
           oldspot.piece = null;
           spot.piece = moved_piece;
-
+		  
           //this.debug("move sent to server");
           spot.belongingComposite.add(moved_piece);
+		  
 
           moved_piece.composite = spot.belongingComposite;
           moved_piece.oldspot = spot;//always last
     },
 
 	__handlerPieceAttacked: function(e) {
-		  
+		 var attacked = e.getTarget();
+		 var attacker = e.getRelatedTarget();
+		 //debugger;
+
+		 console.log(attacked.color + "   " + attacker.color );
+		 if(attacked.color == attacker.color)
+			 return;
+
+
+		 this.updateSpotPiece(attacked,attacker,attacker.oldspot);
+
+
 	},
 
 	classContext: null,
@@ -484,7 +497,7 @@ qx.Class.define("qoox_chess.Application",
                             player_id: this.id,
                             messagetype: "newmove",
                             piece: moved_piece.piece_type,
-                            color: moved_piece.player,
+                            color: moved_piece.color,
                             startpos: [oldspot.yc,oldspot.xc],
                               endpos: [   spot.yc,   spot.xc]
                       });
@@ -595,10 +608,11 @@ qx.Class.define("qoox_chess.Application",
           newcell.addListener("drop",this.newcellDrop,this);
 
 
-          composite.add(newcell);
+			  composite.add(newcell);
 
-          if(y>1 && y<6)
+          if(y>1 && y<6) {
               continue;
+		  };
           // from here onwards y can only be in {0,1,6,7}
 
 
@@ -620,7 +634,7 @@ qx.Class.define("qoox_chess.Application",
                   piece.piece_type = typeregex.exec(img_name);
                   if(piece.piece_type) {
                       piece.piece_type = piece.piece_type[0];
-                      piece.player = (y==0)?"white":"black";
+                      piece.color = (y==0)?"white":"black";
                   };
               };
           } else {//just pawns
@@ -633,7 +647,7 @@ qx.Class.define("qoox_chess.Application",
                                : "pawn.PNG"
                               )
                           );
-              piece.player = (y==1)?"white":"black";
+              piece.color = (y==1)?"white":"black";
               piece.piece_type = "pawn";
 
 
@@ -658,11 +672,11 @@ qx.Class.define("qoox_chess.Application",
 
 		  //when some other piece tried to attack it
 		  piece.setDroppable(true);
-		  piece.addListener("drop",this.__handlerPieceAttacked);
+		  piece.addListener("drop",this.__handlerPieceAttacked,this);
 
 
 
-          if(piece.player == "white") {//actually just the opposite of the current player
+          if(piece.color == "white") {//actually just the opposite of the current player
 
           };
 

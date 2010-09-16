@@ -142,22 +142,34 @@ function Table() {
 			// this case is for black
 			switch(piecename) {
 				case "pawn":
+					//just move pawn
 					if(
-							(//one row higher
-							 color == "black" &&
-							 starty - endy == 1 &&
-							 dx == 0
-							) 
-							||
-							(//one row lower
-							 color == "white" &&
-							 starty - endy == -1 &&
-							 dx == 0
+							this.table[endy][endx] == "empty" &&
+							(
+								 (//one row higher
+									  color == "black" &&
+									  starty - endy == 1 &&
+									  dx == 0
+								 ) 
+								 ||
+								 (//one row lower
+									  color == "white" &&
+									  starty - endy == -1 &&
+									  dx == 0
+								 )
 							)
 					  )
 						return true;
 
+				     //attack with pawn
+				     if(
+							 this.table[endy][endx] != "empty" &&
+							 dy == 1 &&
+							 dx == 1
+					   )
+						 return true;
 
+					 //TODO: implement en passant
 
 					break;
 				case "knight":
@@ -176,7 +188,7 @@ function Table() {
 					break;
 				case "king":
 					if( dx <= 1 &&
-							dy <= 1)
+						dy <= 1)
 						return true;
 					break;
 				case "queen":
