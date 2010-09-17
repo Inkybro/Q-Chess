@@ -42,14 +42,14 @@ qx.Class.define("qoox_chess.Application",
                       };
           }
       },
-	side: { 
-			check: function(value) {
-					   return
-						   value == "white" ||
-						   value == "black";
-				   },
-			init: "white"
-		  },
+    side: { 
+            check: function(value) {
+                       return
+                           value == "white" ||
+                           value == "black";
+                   },
+            init: "white"
+          },
     connected: {//after calling initGame() this will be true if it has connected to the server or false otherwise
         check: "Boolean",
         init: false
@@ -60,65 +60,65 @@ qx.Class.define("qoox_chess.Application",
   {
     //ajaxurl: "http://192.168.0.2",
     id: -1,// id of player that has been connected to the server
-	faye_client: null,
+    faye_client: null,
 
-	
+    
 
 
-	//controls
-	listPlayers:     null, // list with players connected to the server
-	listChat:        null, // list with messages exchanged by the players
+    //controls
+    listPlayers:     null, // list with players connected to the server
+    listChat:        null, // list with messages exchanged by the players
     listRequests:    null, // list with requests to play from other players
-	textChatMessage: null, // text field with the message for the chat list
-	gridChess:       null, // qx.ui.container.Composite object that stores the board
-	arrayBoard:      null, // 2D array with the elements
-	opponent:        null, // string containing name of opponent
+    textChatMessage: null, // text field with the message for the chat list
+    gridChess:       null, // qx.ui.container.Composite object that stores the board
+    arrayBoard:      null, // 2D array with the elements
+    opponent:        null, // string containing name of opponent
 
 
 
-	//set whose Turn it is now
-	//
-	//  it will work something like
-	//
-	//
-	// ajax_request("completed",function(){
-	// ...
-	// if(
-	//    move is valid
-	//    ) {
-	//       
-	//       gameTable.setTurn(side == "black" ? "white" : "black");
-	//
-	//       faye_client.publish("/playerChannel/"+this.opponent,
-	//			{
-	//			  type: "opponentMoved",
-	//			  name: this.opponent
-	//			}
-	//		 );
-	//
-	//    };
-	// });
-	//
-	// 
-	// faye_client.subscribe("/playerChannel/"+this.opponent,function(data) {
-	//       if(data.type=="opponentMoved"){
-	//		     gameTable.setTurn(side == "black" ? "white" : "black");
-	//       };
-	// });
-	//
-	//
-	//
-	setTurn: function(Side) {
-		var x,y;
-		for(x=0;x<8;x++) {
-			for(y=0;y<8;y++) {
-				if( this.arrayBoard[y][x].color == Side)
-					this.arrayBoard[y][x].setDraggable(true);
-				else
-					this.arrayBoard[y][x].setDraggable(false);
-			};
-		};
-	},
+    //set whose Turn it is now
+    //
+    //  it will work something like
+    //
+    //
+    // ajax_request("completed",function(){
+    // ...
+    // if(
+    //    move is valid
+    //    ) {
+    //       
+    //       gameTable.setTurn(side == "black" ? "white" : "black");
+    //
+    //       faye_client.publish("/playerChannel/"+this.opponent,
+    //            {
+    //              type: "opponentMoved",
+    //              name: this.opponent
+    //            }
+    //         );
+    //
+    //    };
+    // });
+    //
+    // 
+    // faye_client.subscribe("/playerChannel/"+this.opponent,function(data) {
+    //       if(data.type=="opponentMoved"){
+    //             gameTable.setTurn(side == "black" ? "white" : "black");
+    //       };
+    // });
+    //
+    //
+    //
+    setTurn: function(Side) {
+        var x,y;
+        for(x=0;x<8;x++) {
+            for(y=0;y<8;y++) {
+                if( this.arrayBoard[y][x].color == Side)
+                    this.arrayBoard[y][x].setDraggable(true);
+                else
+                    this.arrayBoard[y][x].setDraggable(false);
+            };
+        };
+    },
 
     //methods
     makeRequest: function(verb) {
@@ -140,15 +140,15 @@ qx.Class.define("qoox_chess.Application",
         container.setPadding(20);
         this.getRoot().add(container, {left:30,top:0}        );
 
-		this.gridChess = this.makeChessGrid();
+        this.gridChess = this.makeChessGrid();
         container.add(this.gridChess, {row: 0, column: 0});
     },
     makePlayerList: function() {
         var configList = new qx.ui.form.List;
-		this.getRoot().add(
-				new qx.ui.basic.Label("Player list:"),
-				{left:600,top:0}
-		);
+        this.getRoot().add(
+                new qx.ui.basic.Label("Player list:"),
+                {left:600,top:0}
+        );
         this.getRoot().add(configList, {left:600,top:20});
         configList.setScrollbarX("on");
         configList.set({ height: 260, width: 150 });
@@ -161,24 +161,24 @@ qx.Class.define("qoox_chess.Application",
 
         //this.repopulatePlayerList();
     },
-	makeChatList: function() {
+    makeChatList: function() {
         var chatList = new qx.ui.form.List;
-		var messageField = new qx.ui.form.TextField("Kasparov").set( 
-				{
+        var messageField = new qx.ui.form.TextField("Kasparov").set( 
+                {
                     maxLength: 50
-				});
+                });
 
-		messageField.addListener("keyup",function(e){
-				if(e.getKeyIdentifier() === "Enter") {
-						 this.faye_client.publish('/channel', {
-								 sender: this.getPlayerName(),
+        messageField.addListener("keyup",function(e){
+                if(e.getKeyIdentifier() === "Enter") {
+                         this.faye_client.publish('/channel', {
+                                 sender: this.getPlayerName(),
                                  text:   messageField.getValue(),
-								 type: "chatMessage"
-						 });
-						 messageField.setValue("");
-				};
-		},this);
-	    messageField.setWidth(200);
+                                 type: "chatMessage"
+                         });
+                         messageField.setValue("");
+                };
+        },this);
+        messageField.setWidth(200);
 
         chatList.set({ height: 280, width: 300 });
         chatList.setScrollbarX("on");
@@ -187,20 +187,20 @@ qx.Class.define("qoox_chess.Application",
         this.textChatMessage =messageField;
 
 
-		this.getRoot().add(
-				new qx.ui.basic.Label("Lobby chat:"),
-				{left:600,top:280}
-		);
+        this.getRoot().add(
+                new qx.ui.basic.Label("Lobby chat:"),
+                {left:600,top:280}
+        );
         this.getRoot().add(chatList,     { left:600,top:300});
-		this.getRoot().add(messageField, { left:600,top:590});
-	},
+        this.getRoot().add(messageField, { left:600,top:590});
+    },
 
     makeRequestsList: function() {
         var list = new qx.ui.form.List;
-		this.getRoot().add(
-				new qx.ui.basic.Label("Game requests:"),
-				{left:870,top:20}
-		);
+        this.getRoot().add(
+                new qx.ui.basic.Label("Game requests:"),
+                {left:870,top:20}
+        );
         this.getRoot().add(list, {left:870,top:40});
         list.setScrollbarX("on");
         list.set({ height: 260, width: 150 });
@@ -210,7 +210,7 @@ qx.Class.define("qoox_chess.Application",
 
 
 
-	//repopulatePlayerList won't be needed anymore
+    //repopulatePlayerList won't be needed anymore
     repopulatePlayerList: function() {
         var req = this.makeRequest("GET");
 
@@ -219,7 +219,7 @@ qx.Class.define("qoox_chess.Application",
         req.addListener("completed", function(e) { 
                 context.listPlayers.removeAll();
                 var data = e.getContent();
-				var i;
+                var i;
                 for(i in data.names) {
                     var item = new qx.ui.form.ListItem(data.names[i]);
                     item.setEnabled(true);
@@ -271,41 +271,41 @@ qx.Class.define("qoox_chess.Application",
 
 
             req.addListener("completed", function(e) { 
-					//debugger;
+                    //debugger;
 
-					try {
-						var data = e.getContent();
-						//alert(qx.util.Serializer.toJson(e.getContent())); 
+                    try {
+                        var data = e.getContent();
+                        //alert(qx.util.Serializer.toJson(e.getContent())); 
 
-						//debugger;
-						if(data.messagetype == "error") {
-							throw data;
-							//alert("error: "+ data.description);
-						};
+                        //debugger;
+                        if(data.messagetype == "error") {
+                            throw data;
+                            //alert("error: "+ data.description);
+                        };
 
-						this.id = this.getPlayerName();
-						this.connected = true;
+                        this.id = this.getPlayerName();
+                        this.connected = true;
 
-						var timer = qx.util.TimerManager.getInstance();
-						timer.start(function(userData, timerId)
-									{ 
-										this.tellServerImAlive(); 
-										//this.repopulatePlayerList();
+                        var timer = qx.util.TimerManager.getInstance();
+                        timer.start(function(userData, timerId)
+                                    { 
+                                        this.tellServerImAlive(); 
+                                        //this.repopulatePlayerList();
 
 
 
-										//if (++userData.count == 3)
-											//timer.stop(timerId);
-									},
-									3000,
-									this,
-									{ count: 0 }
-						);
-						intercept();
+                                        //if (++userData.count == 3)
+                                            //timer.stop(timerId);
+                                    },
+                                    3000,
+                                    this,
+                                    { count: 0 }
+                        );
+                        intercept();
 
-					}catch(e) {
-						console.log("error: "+e.description);
-					};
+                    }catch(e) {
+                        console.log("error: "+e.description);
+                    };
             },this);
 
             // notify server that a new player has joined
@@ -327,7 +327,16 @@ qx.Class.define("qoox_chess.Application",
       this.base(arguments);
 
 
-	  this.arrayBoard = new Array;
+      this.arrayBoard = new Array(
+              new Array,
+              new Array,
+              new Array,
+              new Array,
+              new Array,
+              new Array,
+              new Array,
+              new Array
+      );
 
 
       if(qx.core.Variant.isSet("qx.debug","on")) {
@@ -347,21 +356,21 @@ qx.Class.define("qoox_chess.Application",
               context.makePlayerList();
               context.makeChatList();
               context.makeRequestsList();
-			  //debugger;
+              //debugger;
 
 
-			  /*
-			   *
-			   * First get current players, and then tell everyone that you've also joined
-			   *
-			   */
-			  //debugger;
-			  context.repopulatePlayerList();
-			  context.faye_client.publish('/channel', {
-					    sender: context.getPlayerName(),
-						type: "newPlayer",
-					    name: context.getPlayerName()
-			  });
+              /*
+               *
+               * First get current players, and then tell everyone that you've also joined
+               *
+               */
+              //debugger;
+              context.repopulatePlayerList();
+              context.faye_client.publish('/channel', {
+                        sender: context.getPlayerName(),
+                        type: "newPlayer",
+                        name: context.getPlayerName()
+              });
 
 
               win.close();
@@ -373,61 +382,61 @@ qx.Class.define("qoox_chess.Application",
       //comet client
       if(Faye) {
 
-		  try {
+          try {
 
-			  var context = this;
-			  var client  = new Faye.Client("http://localhost:80/comet",{timeout: 120});
-			  this.faye_client = client;
-
-
+              var context = this;
+              var client  = new Faye.Client("http://localhost:80/comet",{timeout: 120});
+              this.faye_client = client;
 
 
-			  client.subscribe('/channel', function(message) {
-
-					  if(!message.sender) {
-					      console.log(message);
-					      return;
-					  };
-
-					  context.debug(message);
-
-					  switch(message.type) {
-						  case "chatMessage":
-								  context.listChat.add(
-									  new qx.ui.form.ListItem(
-										  "<"+message.sender+">  "+
-										  message.text
-									  )
-								  );
-								  break;
-						  case "newPlayer":
-						          if(message.sender == context.getPlayerName())
-								      return;
-								  context.listPlayers.add(new qx.ui.form.ListItem(message.name));
-								  break;
-						  case "lostPlayerConnection":
-							      //TODO: delete player from player List
-								  console.log("server lost connection with player "+message.name);
-
-						          //player that lost connection with the server is taken out of the list
-								  context.listPlayers.remove(
-									  context.listPlayers.findItem(
-										  message.name
-									  )
-								  );
-
-						          break;
-						  default:;
-					  };
-			  });
 
 
-		  } catch(e) {
+              client.subscribe('/channel', function(message) {
+
+                      if(!message.sender) {
+                          console.log(message);
+                          return;
+                      };
+
+                      context.debug(message);
+
+                      switch(message.type) {
+                          case "chatMessage":
+                                  context.listChat.add(
+                                      new qx.ui.form.ListItem(
+                                          "<"+message.sender+">  "+
+                                          message.text
+                                      )
+                                  );
+                                  break;
+                          case "newPlayer":
+                                  if(message.sender == context.getPlayerName())
+                                      return;
+                                  context.listPlayers.add(new qx.ui.form.ListItem(message.name));
+                                  break;
+                          case "lostPlayerConnection":
+                                  //TODO: delete player from player List
+                                  console.log("server lost connection with player "+message.name);
+
+                                  //player that lost connection with the server is taken out of the list
+                                  context.listPlayers.remove(
+                                      context.listPlayers.findItem(
+                                          message.name
+                                      )
+                                  );
+
+                                  break;
+                          default:;
+                      };
+              });
+
+
+          } catch(e) {
 
               alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
 
-		  };
-			  
+          };
+              
 
       };
 
@@ -452,37 +461,99 @@ qx.Class.define("qoox_chess.Application",
     },
 
 
-	//spot,oldspot are both composites, moved_piece is an image which sits inside oldspot
+    //spot,oldspot are both composites, moved_piece is an image which sits inside oldspot
     updateSpotPiece: function(oldspot,spot,moved_piece) {
           oldspot.piece = null;
           spot.piece = moved_piece;
-		  
+          
           //this.debug("move sent to server");
           spot.belongingComposite.add(moved_piece);
-		  
+          
 
           moved_piece.composite = spot.belongingComposite;
           moved_piece.oldspot = spot;//always last
     },
 
-	__handlerPieceAttacked: function(e) {
-		 var attacked = e.getTarget();
-		 var attacker = e.getRelatedTarget();
-		 //debugger;
 
-		 console.log(attacked.color + "   " + attacker.color );
-		 if(attacked.color == attacker.color)
-			 return;
+    /*
+     *
+     *
+     *
+     */
 
-
-		 this.updateSpotPiece(attacked,attacker,attacker.oldspot);
+    __handlerAttackPlayer: function(e) {
 
 
-	},
+         var attacked = e.getTarget();
+         var attacker = e.getRelatedTarget();
 
-	classContext: null,
+          var req = this.makeRequest("POST");
 
-	newcellDrop: function(e) {
+          var strdata = qx.util.Serializer.toJson({
+                player_id: this.id,
+                messagetype: "newmove",
+                piece: attacker.piece_type,
+                color: attacker.color,
+                startpos: [attacker.yc,attacker.xc],
+                  endpos: [attacked.yc,attacked.xc]
+          });
+
+          //ask server if move is legal
+          req.setData(strdata);
+          req.addListener("completed", function(e) { 
+              var data = e.getContent();
+              if(data.move_okay)
+                  this.__handlerPieceAttacked(attacker,attacked);
+          },this);
+
+
+          req.send();
+
+    },
+
+    __handlerPieceAttacked: function(attacker,attacked) {
+         var imgAttacker, imgAttacked;
+		 debugger;
+
+
+         var i;
+
+         var children = attacker.composite.getChildren();
+         for(i=0;i<children.length;i++) {
+             if(children[i] instanceof qx.ui.basic.Image) {
+                 imgAttacker = children[i];
+                 break;
+             };
+         };
+         
+
+         children = attacked.composite.getChildren();
+         for(i=0;i<children.length;i++) {
+             if(children[i] instanceof qx.ui.basic.Image) {
+                 imgAttacked = children[i];
+                 break;
+             };
+         };
+
+         attacker.composite.remove(imgAttacker);
+         attacked.composite.remove(imgAttacked);
+
+         attacked.composite.add(imgAttacker);
+
+
+         //console.log(attacked.color + "   " + attacker.color );
+         if(attacked.color == attacker.color)
+             return;
+
+
+         //this.updateSpotPiece(attacked,attacker,attacker.oldspot);
+
+
+    },
+
+    classContext: null,
+
+    newcellDrop: function(e) {
 
 
                   var moved_piece = e.getRelatedTarget();
@@ -506,8 +577,8 @@ qx.Class.define("qoox_chess.Application",
                       req.setData(strdata);
                       req.addListener("completed", function(e) { 
 
-							      
-								  //debugger;
+                                  
+                                  //debugger;
                                   var data = e.getContent();
                                   if(data.move_okay)
                                     this.updateSpotPiece(oldspot,spot,moved_piece);
@@ -556,7 +627,7 @@ qx.Class.define("qoox_chess.Application",
 
 
       //this._active = null;
-	  //which kind of piece except for pawns which are treated separately
+      //which kind of piece except for pawns which are treated separately
       var typeregex = new RegExp("(rock|queen|bishop|knight|king)","");
 
 
@@ -587,7 +658,7 @@ qx.Class.define("qoox_chess.Application",
 
           // (x,y) coordinates on the board
 
-		  //debugger;
+          //debugger;
           newcell.xc = x;
           newcell.yc = y;
 
@@ -608,11 +679,11 @@ qx.Class.define("qoox_chess.Application",
           newcell.addListener("drop",this.newcellDrop,this);
 
 
-			  composite.add(newcell);
+          composite.add(newcell);
 
           if(y>1 && y<6) {
               continue;
-		  };
+          };
           // from here onwards y can only be in {0,1,6,7}
 
 
@@ -653,10 +724,14 @@ qx.Class.define("qoox_chess.Application",
 
           };
 
-          //table_state[y][x] = piece;
 
 
-		  //this.arrayBoard[y][x] = piece;
+
+          piece.xc = x;
+          piece.yc = y;
+          this.arrayBoard[y][x] = composite;
+          piece.composite = composite;
+
 
           piece.setDraggable(true);
           piece.addListener(
@@ -670,9 +745,9 @@ qx.Class.define("qoox_chess.Application",
 
 
 
-		  //when some other piece tried to attack it
-		  piece.setDroppable(true);
-		  piece.addListener("drop",this.__handlerPieceAttacked,this);
+          //when some other piece tried to attack it
+          piece.setDroppable(true);
+          piece.addListener("drop",this.__handlerAttackPlayer,this);
 
 
 

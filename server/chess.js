@@ -41,12 +41,17 @@ function Table() {
 				return false;
 			};
 			
+			/*
+
+			// capturing opponents pieces .. classic
+
 			if(piece_end   != "empty") {
 				//todo: if attack then this may be valid
 
 				sys.puts("trying to move a piece onto another \n");
 				return false;
 			};
+			*/
 			
 			this.table[starty][startx] = "empty";
 			this.table[	 endy][	 endx] = piece_start;
@@ -82,7 +87,7 @@ function Table() {
 			else
 				dy = -1;
 
-			if(dx == 0&& dy==0)// this should never happen
+			if(dx == 0 && dy==0)// this should never happen
 				return false;
 
 			i[0] += dy;
@@ -217,13 +222,19 @@ function Table() {
 		function() {
 
 			var i,j;
+			var entryLength = 8;
 
-			for(i=0;i<this.table.size();i++) {
-				sys.puts("\n");
-				for(j=0;j<this.table[i].size();j++) {
-					sys.puts(this.table[i][j]+"  ");
+			for(i=0;i<this.table.length;i++) {
+				var temp = "";
+				//pad entries to 8 characters
+				for(j=0;j<this.table[i].length;j++) {
+					temp += this.table[i][j] + 
+					"           ".substr(0, 8 - this.table[i][j].length);
 				};
+				sys.puts(temp);
 			};
+
+			sys.puts("\n\n");
 	};
 
 	this.name = "";//name of the player

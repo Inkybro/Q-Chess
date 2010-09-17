@@ -6,6 +6,8 @@ var sys    = require('sys'     ) ,
 
 var t1 = new chess.Table();
 var t2 = new chess.Table();
+var t3 = new chess.Table();
+var t4 = new chess.Table();
 
 
 assert.notEqual(t1,t2,"t1!=t2");
@@ -28,6 +30,33 @@ assert.equal( t1.table[1][0] , "empty" , "second row first column empty" );
 assert.equal( t1.table[2][0] , "wpawn" , "third row first column contains a white pawn" );
 
 
+sys.puts("-------------------------------------------------------------");
+t3.move( [6,4] , [5,4] ); // open up a pawn
+//t3.print();
+t3.move( [7,3] , [3,7] ); // move queen to attack
+//t3.print();
+t3.move( [3,7] , [1,5] ); // attack pawn with queen
+t3.print();
+
+
+sys.puts("-------------------------------------------------------------");
+
+t4.move([6,4],[5,4]);
+t4.move([5,4],[4,4]);
+t4.move([4,4],[3,4]);
+t4.move([1,4],[2,4]);
+
+
+//this move isn't legal because
+//two pawns to attack each other this way
+assert.equal(
+		t4.legal_move([2,4],[3,4]) ,
+		false,
+		"attack pawn fail");
+t4.print();
+
+
+sys.puts("-------------------------------------------------------------");
 
 
 
@@ -36,3 +65,6 @@ sys.puts("ok");
 
 //test.run();
 //sys.p(t);
+
+
+
