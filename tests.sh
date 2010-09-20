@@ -51,3 +51,6 @@ echo ""
 echo ""
 
 
+
+GET "http://127.0.0.1?messagetype=get_table_state&name=someguy" 
+echo "\n"

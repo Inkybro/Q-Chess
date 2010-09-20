@@ -11,7 +11,7 @@ var sys = require('sys');
 function Table() {
 	this.table = 
 		[
-			["wrook" , "wknight" , "wbishop" , "wking" , "wqueen" , "wbishop" , "wknight" , "wrook"] ,
+			["wrook" , "wknight" , "wbishop" , "wqueen" , "wking" , "wbishop" , "wknight" , "wrook"] ,
 			["wpawn" , "wpawn"   , "wpawn"   , "wpawn" , "wpawn"  , "wpawn"   , "wpawn"   , "wpawn"] ,
 			["empty" , "empty"   , "empty"   , "empty" , "empty"  , "empty"   , "empty"   , "empty"] ,
 			["empty" , "empty"   , "empty"   , "empty" , "empty"  , "empty"   , "empty"   , "empty"] ,
@@ -133,6 +133,12 @@ function Table() {
                 return false;
             };
 
+			//not allowed to attack king in any situation
+			if(
+					this.table[endy][endx] == "king" || 
+					this.table[endy][endx] == "wking"
+			  ) return false;
+
 			sys.puts("piece was " + piecename);
 
 
@@ -204,11 +210,15 @@ function Table() {
 						) && this.nothing_inbetween(start,end)
 					  )
 						return true;
+				      
 					break;
 				case "rook":
-					if( (dx == 0   ||
-						 dy == 0 ) &&
-						this.nothing_inbetween(start,end)
+					if( 
+							(
+							 dx == 0   ||
+							 dy == 0 
+							) &&
+							this.nothing_inbetween(start,end)
 					  )
 						return true;
 					break;
@@ -224,6 +234,8 @@ function Table() {
 			var i,j;
 			var entryLength = 8;
 
+			var result = "";
+
 			for(i=0;i<this.table.length;i++) {
 				var temp = "";
 				//pad entries to 8 characters
@@ -232,12 +244,20 @@ function Table() {
 					"           ".substr(0, 8 - this.table[i][j].length);
 				};
 				sys.puts(temp);
+				result+=temp+"\n";
 			};
 
 			sys.puts("\n\n");
+			return result;
 	};
 
+
+	this.ischeck = 
+		function(side) {
+			//TODO: implement routine for finding out if side is in check or not
+		};
 	this.name = "";//name of the player
+
 };
 
 exports.Table = Table;

@@ -205,6 +205,20 @@ function getPlayersList(res) {
 };
 
 
+function getTableState(res,params) {
+    sys.puts("get table state\n");
+
+	var data = players[params.query['name']].table;
+    //var data = players[params.query['name']].table.print();
+
+    res.writeHead(200, {'Content-Type': 'application/json'});
+    res.end(
+            JSON.stringify(
+                    { state: data } 
+                )
+            );
+};
+
 
 
 
@@ -212,14 +226,15 @@ function getPlayersList(res) {
 
 
 function errorMessage(message,res) {
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        res.end(
-            JSON.stringify(
-                    { 
-                        messagetype: "error",
-                        description: message
-                    } 
-                )
+	sys.puts(message+"\n");
+	res.writeHead(200, {'Content-Type': 'application/json'});
+	res.end(
+			JSON.stringify( 
+					{ 
+					messagetype: "error",
+					description: message
+					} 
+				)
             );   
 };
 
@@ -299,8 +314,9 @@ function newMove(res,data) {
                 );
         };
 
-    } else
-        sys.puts("table for player with name "+id+" does not exist");
+    } else {
+		errorMessage("table for player with name "+id+" does not exist");
+	};
 };
 
 
@@ -431,10 +447,9 @@ exports.server = http.createServer(function (req, res) {
                         newMove(res,data);
                         break;
                     case "ping":
-                        sys.puts("just got a ping from"+data.name);
+                        //sys.puts("just got a ping from"+data.name);
                         
                         if(!players[data.name]) {
-                            sys.puts("ping request received from a player that does not exist");
                             errorMessage("no such user",res);
                             return;
                         };
@@ -465,9 +480,12 @@ exports.server = http.createServer(function (req, res) {
 								//client.publish({
 								//});
                                 return;
+							case "get_table_state":
+								getTableState(res,params);
+                                return;
                             case "get_players_list":
                                 getPlayersList(res);
-                                break;
+                                return;
                             default:
 								if(params.query['messagetype']) {
 									sys.puts(
@@ -481,6 +499,7 @@ exports.server = http.createServer(function (req, res) {
                     };
 
 
+					//sys.puts("I'm here\n");
 
 
 
@@ -598,5 +617,5 @@ fs.readFile('../config.json',
 
 
 fayeServer.attach(exports.server);
-setInterval( function(){checkPlayersAlive();} , 1000 );
+//setInterval( function(){checkPlayersAlive();} , 1000 );
 

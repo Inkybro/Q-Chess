@@ -8,6 +8,7 @@ var t1 = new chess.Table();
 var t2 = new chess.Table();
 var t3 = new chess.Table();
 var t4 = new chess.Table();
+var t5 = new chess.Table();
 
 
 assert.notEqual(t1,t2,"t1!=t2");
@@ -35,7 +36,18 @@ t3.move( [6,4] , [5,4] ); // open up a pawn
 //t3.print();
 t3.move( [7,3] , [3,7] ); // move queen to attack
 //t3.print();
+assert.equal(
+		t3.legal_move([3,7],[1,5]) ,
+		true,
+		"queen can attack the pawn");
 t3.move( [3,7] , [1,5] ); // attack pawn with queen
+
+
+assert.equal(
+		t3.legal_move([1,5],[2,4]),
+		true,
+		"queen can move one square south-west");
+
 t3.print();
 
 
@@ -59,6 +71,16 @@ t4.print();
 sys.puts("-------------------------------------------------------------");
 
 
+
+
+
+
+
+
+
+
+
+sys.puts("-------------------------------------------------------------");
 
 //if every test goes fine it should only output "ok"
 sys.puts("ok");
