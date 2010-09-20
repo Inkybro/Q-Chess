@@ -3,15 +3,16 @@
  *
  * chess server
  *
- * JSON will be used
- *
  * TODO: establish what kind of messages it will receive,
  *         how to persist the data, and where to store it,
  *         what actions are taken based on each type of message.
  *
  *    dependencies:
  *
+ *        
  *        Node.js
+ *        Faye
+ *
  *
  */
 
@@ -40,7 +41,6 @@ var config;//qooxdoo config file(will contain address to node.js server)
  * players[name] = {
  *		lastping:  Date object,        // <-- the last ping we got from this player
  *      table:     chess.Table object, // <-- the current state of the table for this player
- *      requests:  Array               // <-- requests from the following players have been made for a game
  *      plays_with: String             // <-- name of the player with whom he plays
  * };
  *
@@ -260,7 +260,6 @@ function newUser(res,params) {
          {
              lastping: new Date(),
              table:  new chess.Table(),
-             requests: new Array,
              plays_with: null
          };
 
@@ -334,6 +333,7 @@ function checkPlayer(name,res) {
 
 
 
+/*
 function requestMatch(data,res) {
     //data.player1 requests a match with data.player2
 
@@ -363,7 +363,7 @@ function requestMatch(data,res) {
             JSON.stringify( {request_ok: 1})
            );
 };
-
+*/
 
 function meltTables(p1,p2){
     delete players[p1].table;
@@ -394,8 +394,8 @@ function acceptRequest(data,res) {
 
 
     //forget the requests to play from other players since these two are playing together now
-    data.player.requests = new Array;
-    data.requester.requests = new Array;
+    //data.player.requests = new Array;
+    //data.requester.requests = new Array;
 
     res.writeHead(200, {'Content-Type': 'application/json'});
     res.end( 

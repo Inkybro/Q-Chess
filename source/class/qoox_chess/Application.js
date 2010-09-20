@@ -19,6 +19,10 @@ http://github.com/wsdookadr
 // TODO: code here needs some serious refactoring(at least getChessGrid ...)
 
 
+// TODO: gameRequest is used to request a game with another player, some confirm box
+// will appear, if he says "ok" then on ss the tables will be melted and the game can
+// start, setTurn should be used and also passing moves around should be done on the channel
+// of the game
 
 
 qx.Class.define("qoox_chess.Application",
@@ -173,17 +177,17 @@ qx.Class.define("qoox_chess.Application",
 		this.buttonRequest.addListener("execute",function(e) {
                     console.log("just requested game");
 
-                    var invitedPlayer = this.listPlayers.getSelection()[0];
-                    debugger;
+                    var invitedPlayer = this.listPlayers.getSelection()[0].getLabel();
+                    //debugger;
                     this.faye_client.publish(
                         "/playerChannel/"+ invitedPlayer,
                         {
+                            sender: this.getPlayerName(),
                             messagetype: "gameRequest",
-                            sender: this.id,
                         });
 				},this);
 
-        this.getRoot().add(this.buttonRequest,{left:740,top:20});
+        this.getRoot().add(this.buttonRequest,{left:800,top:20});
     },
 
 
@@ -399,6 +403,41 @@ qx.Class.define("qoox_chess.Application",
                         name: context.getPlayerName()
               });
 
+			  context.faye_client.subscribe("/playerChannel/"+context.id,function(message) {
+
+				      //working, still need to write handler
+					  alert("message on playerChannel");
+					  console.log(message);
+
+					  if(message.type == "gameRequest") {
+						  if(confirm(message.sender+" just invited you to play a game with him, do you want to play ?")) {
+						  console.log("yes, will play with"+message.sender);
+						  //TODO: send message to server to acknowledge that you have indeed accepted and
+						  //on server-side the tables will be melted and you will start playing
+
+
+
+						  //TODO:
+						  
+						  /*
+						  req = makeRequest("POST")
+						  req.setParameter("player",context.id);
+						  req.setParameter("requester",message.sender);
+						  req.addListener("completed",function(e){
+							 ...
+						  });
+						  req.send();
+						  */
+
+
+						  } else {
+						  console.log("no, won't play");
+						  };
+
+					  };
+
+			  });
+
 
               win.close();
               //alert("now player list");
@@ -414,27 +453,6 @@ qx.Class.define("qoox_chess.Application",
               var context = this;
               var client  = new Faye.Client("http://localhost:80/comet",{timeout: 120});
               this.faye_client = client;
-
-
-              client.subscribe("/playerChannel/"+this.id,function(message) {
-
-                      console.log("message on playerChannel");
-
-                      if(message.type == "gameRequest") {
-                          if(confirm(message.sender+" just invited you to play a game with him, do you want to play ?")) {
-                          console.log("yes, will play with"+message.sender);
-                          //TODO: send message to server to acknowledge that you have indeed accepted and
-                          //on server-side the tables will be melted and you will start playing
-
-
-                          } else {
-                          console.log("no, won't play");
-                          };
-
-                      };
-
-
-              });
 
 
               client.subscribe('/channel', function(message) {
@@ -550,7 +568,7 @@ qx.Class.define("qoox_chess.Application",
 
 
 		  console.log(strdata);
-		  debugger;
+		  //debugger;
 
           //ask server if move is legal
           req.setData(strdata);
