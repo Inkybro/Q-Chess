@@ -379,7 +379,7 @@ function meltTables(p1,p2){
 };
 
 function acceptRequest(data,res) {
-    if(!(checkPlayer(data.player,res)&&
+    if(!(checkPlayer(data.requestee,res)&&
          checkPlayer(data.requester,res)))
         return;
 
@@ -390,24 +390,16 @@ function acceptRequest(data,res) {
 
     //TODO: IMPORTANT !!! check data.requester is really in players[data.player].requests array
 
-    meltTables(data.player,data.requester);
+    meltTables(
+            data.requestee,
+            data.requester
+    );
 
-
-    //forget the requests to play from other players since these two are playing together now
-    //data.player.requests = new Array;
-    //data.requester.requests = new Array;
 
     res.writeHead(200, {'Content-Type': 'application/json'});
     res.end( 
             JSON.stringify( {request_ok: 1})
            );
-    
-	client.publish("/playerChannel/"+data.requester,{
-			 sender: "Server",
-             type: "acceptRequest",
-			 name: data.player
-	});
-
 };
 
 //this is exported by this module

@@ -7,6 +7,7 @@ http://github.com/wsdookadr
 /* ************************************************************************
 
 #asset(qoox_chess/*)
+#require(qoox_chess/Cell.js)
 
 ************************************************************************ */
 
@@ -23,6 +24,16 @@ http://github.com/wsdookadr
 // will appear, if he says "ok" then on ss the tables will be melted and the game can
 // start, setTurn should be used and also passing moves around should be done on the channel
 // of the game
+
+// TODO:
+// __handlerPieceAttacked  and updateSpotPiece  are both responsible for 
+// moving pieces using coordinates on the board, they need to be unified in one single function f
+// so I can use this function in treating the message tellCoPlayerMove so the move will be made
+// for the other player as well
+//
+// TODO:
+//
+// abstract all cell logic in a class called qoox_chess.Cell
 
 
 qx.Class.define("qoox_chess.Application",
@@ -45,6 +56,10 @@ qx.Class.define("qoox_chess.Application",
                           return false;
                       };
           }
+      },
+      coPlayer: {
+          check: "String",
+          init: null
       },
     side: { 
             check: function(value) {
@@ -74,6 +89,7 @@ qx.Class.define("qoox_chess.Application",
     gridChess:       null, // qx.ui.container.Composite object that stores the board
     arrayBoard:      null, // 2D array with the elements
     opponent:        null, // string containing name of opponent
+	ourTurn:         true,
 
 
 
@@ -184,6 +200,7 @@ qx.Class.define("qoox_chess.Application",
                         {
                             sender: this.getPlayerName(),
                             messagetype: "gameRequest",
+							requesterColor: this.side
                         });
 				},this);
 
@@ -406,36 +423,52 @@ qx.Class.define("qoox_chess.Application",
 			  context.faye_client.subscribe("/playerChannel/"+context.id,function(message) {
 
 				      //working, still need to write handler
-					  alert("message on playerChannel");
+					  //alert("message on playerChannel");
 					  console.log(message);
+					  if(message.messagetype == "gameRequest") {
+                          var confirmMsg = message.sender+" just invited you to play a game with him, do you want to play ?";
+						  if(confirm(confirmMsg)) {
+                              console.log("yes, will play with"+message.sender);
+                              //TODO: send message to server to acknowledge that you have indeed accepted and
+                              //on server-side the tables will be melted and you will start playing
 
-					  if(message.type == "gameRequest") {
-						  if(confirm(message.sender+" just invited you to play a game with him, do you want to play ?")) {
-						  console.log("yes, will play with"+message.sender);
-						  //TODO: send message to server to acknowledge that you have indeed accepted and
-						  //on server-side the tables will be melted and you will start playing
+                              var req = context.makeRequest("POST");
 
+                              req.setData({
+                                        requestee: context.id,
+                                        requester: message.sender
+                                      });
 
+                              req.addListener("completed",function(e){
 
-						  //TODO:
-						  
-						  /*
-						  req = makeRequest("POST")
-						  req.setParameter("player",context.id);
-						  req.setParameter("requester",message.sender);
-						  req.addListener("completed",function(e){
-							 ...
-						  });
-						  req.send();
-						  */
+                                          var data = e.getData();
 
+                                          if(data.request_ok) {
+                                              console.log("ss is ok with game between players");
+                                              //SUCCESS, game can begin
+
+											  context.side = (message.requesterColor == "white" ) ? "black" : "white";
+
+                                              context.setCoPlayer(message.sender);
+                                          } else {
+                                              if(data.messagetype == "error") {
+                                                alert(data.description);
+                                              };
+                                              console.log("ss is not ok");
+                                          };
+
+                                      });
+
+                              req.send();
 
 						  } else {
-						  console.log("no, won't play");
+							  console.log("no, won't play");
 						  };
+					  } else if (message.messagetype == "tellCoPlayerMove") {
+                          //tell the other player about what move the current player made
+                          //this.__handlerPieceAttacked(this.arrayBoard[
 
-					  };
-
+                      };
 			  });
 
 
@@ -515,20 +548,35 @@ qx.Class.define("qoox_chess.Application",
 
     getNewWidget : function(color)
     {
-      var widget = new qx.ui.core.Widget().set({
-        width: 50,
-        height: 50,
-        backgroundColor: color
-      });
-
-
-      return widget;
+      return new qoox_chess.Cell(color);
     },
+
+
+	//abstraction over updateSpotPiece and __handlerPieceAttacked
+	
+	imove: function(a,b) {
+		if(
+				a instanceof "qx.ui.basic.Image" &&
+				b instanceof "qx.ui.basic.Image"
+		  ) return this.__handlerPieceAttacked(a,b);
+
+		if(
+				a instanceof "qoox_chess.Cell" &&
+				b instanceof "qx.ui.basic.Image"
+		  )
+			return this.updateSpotPiece(a,b);
+
+		console.log("something went wrong in imove, should not reach this point");
+	},
+
+
+
 
 
     //moved_piece moves to spot which is a composite
     updateSpotPiece: function(moved_piece,spot) {
-          
+     
+		  debugger;
           //this.debug("move sent to server");
           spot.composite.add(moved_piece);
 
@@ -540,6 +588,17 @@ qx.Class.define("qoox_chess.Application",
 		  moved_piece.yc = spot.yc;
     },
 
+    tellCoPlayerMove: function(start,end) {
+          this.faye_client.publish(
+                  "/playerChannel/"+this.getCoPlayer(),
+                  {
+                    player_id: this.id,
+                    messagetype: "tellCoPlayerMove",
+                    startpos: start,
+                    endpos: end
+                  });
+    },
+
 
     /*
      *
@@ -548,6 +607,7 @@ qx.Class.define("qoox_chess.Application",
      */
 
     __handlerAttackPlayer: function(e) {
+
 
 
          var attacked = e.getTarget();
@@ -577,6 +637,7 @@ qx.Class.define("qoox_chess.Application",
               if(data.move_okay) {
 				  console.log("legal move");
                   this.__handlerPieceAttacked(attacker,attacked);
+                  this.tellCoPlayerMove();
 
 
 			  }else {
@@ -661,6 +722,7 @@ qx.Class.define("qoox_chess.Application",
                                   if(data.move_okay) {
 									  console.log("legal move");
 									  this.updateSpotPiece(moved_piece,spot);
+                                      this.tellCoPlayerMove();
 								  }
                                   else {
 									  console.log("illegal move");
@@ -733,7 +795,7 @@ qx.Class.define("qoox_chess.Application",
           var piece;
           var composite = new qx.ui.container.Composite(new qx.ui.layout.Grow());
           box.add(composite,{row: y, column: x});
-          var newcell   = this.getNewWidget( (((x%2)+(y%2))%2!=0) ? "black":"white" , x , y);
+          var newcell   = this.getNewWidget( (((x%2)+(y%2))%2!=0) ? "black":"white");
 
           // (x,y) coordinates on the board
 
