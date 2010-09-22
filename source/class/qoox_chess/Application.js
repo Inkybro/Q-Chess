@@ -194,7 +194,6 @@ qx.Class.define("qoox_chess.Application",
                     console.log("just requested game");
 
                     var invitedPlayer = this.listPlayers.getSelection()[0].getLabel();
-                    //debugger;
                     this.faye_client.publish(
                         "/playerChannel/"+ invitedPlayer,
                         {
@@ -434,30 +433,33 @@ qx.Class.define("qoox_chess.Application",
 
                               var req = context.makeRequest("POST");
 
-                              req.setData({
+                              req.setData(
+								  qx.util.Serializer.toJson({
+									    messagetype: "requestMatch",
                                         requestee: context.id,
                                         requester: message.sender
-                                      });
+								  })
+							  );
 
                               req.addListener("completed",function(e){
 
-                                          var data = e.getData();
+									  var data = e.getContent();
 
-                                          if(data.request_ok) {
-                                              console.log("ss is ok with game between players");
-                                              //SUCCESS, game can begin
+									  if(data.request_ok) {
+										  console.log("[DEBUG] ss is ok with game between players");
+										  //SUCCESS, game can begin
 
-											  context.side = (message.requesterColor == "white" ) ? "black" : "white";
+										  context.side = (message.requesterColor == "white" ) ? "black" : "white";
 
-                                              context.setCoPlayer(message.sender);
-                                          } else {
-                                              if(data.messagetype == "error") {
-                                                alert(data.description);
-                                              };
-                                              console.log("ss is not ok");
-                                          };
+										  context.setCoPlayer(message.sender);
+									  } else {
+										  if(data.messagetype == "error") {
+											  alert(data.description);
+										  };
+										  console.log("ss is not ok");
+									  };
 
-                                      });
+                              });
 
                               req.send();
 
@@ -468,7 +470,31 @@ qx.Class.define("qoox_chess.Application",
                           //tell the other player about what move the current player made
                           //this.__handlerPieceAttacked(this.arrayBoard[
 
-                      };
+						  debugger;
+
+                          try {
+                              console.log("got move from coplayer");
+                              var startpos = message.startpos;
+                              var endpos = message.endpos;
+
+                              
+                              var start = context.arrayBoard[startpos[0]][startpos[1]];
+                              var   end = context.arrayBoard[  endpos[0]][  endpos[1]];
+                              //start and end are qoox_chess.Cell objects
+
+
+                              var starti = context.getPieceFromComposite( start.composite );
+                              var endi   = context.getPieceFromComposite( end.composite   );
+                              //starti and endi are the piece objects(images) inside start and end
+
+                              if(endi)  context.imove( starti,endi );
+                              else      context.imove( starti,end  );
+                          } catch(e) {
+                              alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
+                          };
+
+                      } else {
+					  };
 			  });
 
 
@@ -546,23 +572,19 @@ qx.Class.define("qoox_chess.Application",
     },
 
 
-    getNewWidget : function(color)
-    {
-      return new qoox_chess.Cell(color);
-    },
 
 
 	//abstraction over updateSpotPiece and __handlerPieceAttacked
-	
+	//Javascript typechecking , I don't have it
 	imove: function(a,b) {
 		if(
-				a instanceof "qx.ui.basic.Image" &&
-				b instanceof "qx.ui.basic.Image"
+				a instanceof qx.ui.basic.Image &&
+				b instanceof qx.ui.basic.Image
 		  ) return this.__handlerPieceAttacked(a,b);
 
 		if(
-				a instanceof "qoox_chess.Cell" &&
-				b instanceof "qx.ui.basic.Image"
+				a instanceof qx.ui.basic.Image &&
+				b instanceof qoox_chess.Cell
 		  )
 			return this.updateSpotPiece(a,b);
 
@@ -576,7 +598,6 @@ qx.Class.define("qoox_chess.Application",
     //moved_piece moves to spot which is a composite
     updateSpotPiece: function(moved_piece,spot) {
      
-		  debugger;
           //this.debug("move sent to server");
           spot.composite.add(moved_piece);
 
@@ -586,17 +607,6 @@ qx.Class.define("qoox_chess.Application",
 
 		  moved_piece.xc = spot.xc;
 		  moved_piece.yc = spot.yc;
-    },
-
-    tellCoPlayerMove: function(start,end) {
-          this.faye_client.publish(
-                  "/playerChannel/"+this.getCoPlayer(),
-                  {
-                    player_id: this.id,
-                    messagetype: "tellCoPlayerMove",
-                    startpos: start,
-                    endpos: end
-                  });
     },
 
 
@@ -628,7 +638,6 @@ qx.Class.define("qoox_chess.Application",
 
 
 		  console.log(strdata);
-		  //debugger;
 
           //ask server if move is legal
           req.setData(strdata);
@@ -636,9 +645,8 @@ qx.Class.define("qoox_chess.Application",
               var data = e.getContent();
               if(data.move_okay) {
 				  console.log("legal move");
-                  this.__handlerPieceAttacked(attacker,attacked);
-                  this.tellCoPlayerMove();
-
+                  //this.__handlerPieceAttacked(attacker,attacked);
+                  this.imove(attacker,attacked);
 
 			  }else {
 				  console.log("illegal move");
@@ -652,44 +660,41 @@ qx.Class.define("qoox_chess.Application",
 
     },
 
+	getPieceFromComposite: function(comp) {
+         var children = comp.getChildren();
+         for(i=0;i<children.length;i++)
+             if(children[i] instanceof qx.ui.basic.Image)
+				 return children[i];
+		 return null;
+	},
+ 
+
+
     __handlerPieceAttacked: function(attacker,attacked) {
+		 /*
          var imgAttacker, imgAttacked;
          var i;
-		 //c
-		 //debugger;
 
-         var children = attacker.composite.getChildren();
-         for(i=0;i<children.length;i++) {
-             if(children[i] instanceof qx.ui.basic.Image) {
-                 imgAttacker = children[i];
-                 break;
-             };
-         };
-         
-
-         children = attacked.composite.getChildren();
-         for(i=0;i<children.length;i++) {
-             if(children[i] instanceof qx.ui.basic.Image) {
-                 imgAttacked = children[i];
-                 break;
-             };
-         };
-
+         imgAttacker = this.getPieceFromComposite(attacker);         
+         imgAttacked = this.getPieceFromComposite(attacked);         
 
          if(attacked.color == attacker.color) {
 			 console.log("cannot attack your own pieces..crazy?");
              return;
 		 };
+		 */
 
-         attacker.composite.remove(imgAttacker);
-         attacked.composite.remove(imgAttacked);
-         attacked.composite.add(imgAttacker);
+		 var compr = attacker.composite;
+		 var compd = attacked.composite;
+
+         compr.remove(attacker);
+         compd.remove(attacked);
+         compd.add(attacker);
 
 		 attacker.xc        = attacked.xc;
 		 attacker.yc        = attacked.yc;
 		 attacker.composite = attacked.composite;
 		 attacker.newcell   = attacked.newcell;
-
     },
 
 
@@ -717,12 +722,11 @@ qx.Class.define("qoox_chess.Application",
                       req.addListener("completed", function(e) { 
 
                                   
-                                  //debugger;
                                   var data = e.getContent();
                                   if(data.move_okay) {
 									  console.log("legal move");
-									  this.updateSpotPiece(moved_piece,spot);
-                                      this.tellCoPlayerMove();
+									  //this.updateSpotPiece(moved_piece,spot);
+									  this.imove(moved_piece,spot);
 								  }
                                   else {
 									  console.log("illegal move");
@@ -795,19 +799,66 @@ qx.Class.define("qoox_chess.Application",
           var piece;
           var composite = new qx.ui.container.Composite(new qx.ui.layout.Grow());
           box.add(composite,{row: y, column: x});
-          var newcell   = this.getNewWidget( (((x%2)+(y%2))%2!=0) ? "black":"white");
+          var newcell   = new qoox_chess.Cell( (((x%2)+(y%2))%2!=0) ? "black":"white");
+		  newcell.composite = composite;
+		  newcell.piece     = piece;
+          this.arrayBoard[y][x] = newcell;
+
+/*              
+ *               
+ *               arrayBoard[][]
+ *                ___ ___ ___ ___ ___ ___ ___ ___ 
+ *               |   |   |   |   |   |   |   |   |
+ *               |___|___|___|___|___|___|___|___|
+ *               |   |   |   |   |   |   |   |   |
+ *               |___|___|___|___|___|___|___|___|
+ *               |   |   |   |   |   |   |   |   |
+ *               |___|___|___|___|___|___|___|___|
+ *               |   |   |   |   |   |   |   |   |
+ *               |___|___|___|___|___|___|___|___|
+ *               |   |   |   |   |   |   |   |   |
+ *               |___|___|___|___|___|___|___|___|
+ *               |   |   |   |   |   |   |   |   |
+ *               |___|___|___|___|___|___|___|___|
+ *               |   |   |   |   |   |   |   |   |
+ *               |___|___|___|___|___|___|___|___|
+ *               |   |   |   |   |   |   |   |   |
+ *               |//_|___|___|___|___|___|___|___|
+ *               //
+ *              //
+ *              ||
+ *              ||
+ *              \/__________
+ *              / composite \
+ *              \___________/
+ *                    |
+ *                    |
+ *                    |
+ *             /=============\
+ *             ||           ||
+ *             ||           ||
+ *             ||           ||
+ *             ||           ||
+ *             \/           \/
+ *         _______         _________ 
+ *        / piece \       / newcell \
+ *        \_______/       \_________/
+ *       (optional)
+ *
+ *
+ *
+ *
+ *
+ */
 
           // (x,y) coordinates on the board
 
-          //debugger;
           newcell.yc = y;
           newcell.xc = x;
 
 
 		  // store it here because I haven't found the method for this
 		  // in the docs yet(need to look some more)
-		  newcell.composite = composite;
-		  newcell.piece     = piece;
 
 
 
@@ -877,7 +928,6 @@ qx.Class.define("qoox_chess.Application",
           piece.xc = x;
           piece.yc = y;
 
-          this.arrayBoard[y][x] = piece;
 		  
           piece.composite = composite;
 		  piece.newcell = newcell;

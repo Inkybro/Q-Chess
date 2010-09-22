@@ -10,6 +10,10 @@ Dependencies
 qooxdoo 1.1 sdk   unzipped in the same directory where you git clone this repo.  
 http://downloads.sourceforge.net/qooxdoo/qooxdoo-1.1-sdk.zip
 
+
+aptitude install libssl-dev build-essential
+
+
 node.js 0.1.98    installed
 http://nodejs.org/dist/node-v0.1.98.tar.gz
 

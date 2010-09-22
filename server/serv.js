@@ -303,7 +303,30 @@ function newMove(res,data) {
         res.writeHead(200, {'Content-Type': 'application/json'});
 
         if(right_table.legal_move(data.startpos , data.endpos)) {
+
+
             right_table.move(data.startpos , data.endpos);
+
+			if(players[id].plays_with) {
+				sys.puts("just told the co-player("+players[id].plays_with+") the move\n");
+				client.publish(
+					"/playerChannel/"+players[id].plays_with,
+					{
+
+						sender: "Server",
+						messagetype: "tellCoPlayerMove",
+
+						player: id,
+						coplayer: players[id].plays_with,
+
+						startpos: data.startpos,
+						endpos: data.endpos
+					}
+				);
+			};
+
+
+
             res.end( 
                 JSON.stringify( {move_okay: 1,})
                 );
@@ -378,12 +401,17 @@ function meltTables(p1,p2){
     sys.puts("now "+p1+" will play with "+p2);
 };
 
-function acceptRequest(data,res) {
+
+
+function requestMatch(data,res) {
     if(!(checkPlayer(data.requestee,res)&&
          checkPlayer(data.requester,res)))
         return;
 
-    if(players[data.player].plays_with) {
+    if(
+			players[data.requester].plays_with ||
+			players[data.requestee].plays_with
+	  ) {
         errorMessage("already playing with someone",res);
         return;
     };
@@ -396,6 +424,7 @@ function acceptRequest(data,res) {
     );
 
 
+	sys.puts("[DEBUG] sending response now! \n");
     res.writeHead(200, {'Content-Type': 'application/json'});
     res.end( 
             JSON.stringify( {request_ok: 1})
@@ -431,13 +460,10 @@ exports.server = http.createServer(function (req, res) {
                 switch(data.messagetype) {
                     case "requestMatch":
                         requestMatch(data,res);
-                        break;
-                    case "acceptRequest":
-                        acceptRequest(data,res);
-                        break;
+                        return;
                     case "newmove":
                         newMove(res,data);
-                        break;
+                        return;
                     case "ping":
                         //sys.puts("just got a ping from"+data.name);
                         
@@ -448,8 +474,16 @@ exports.server = http.createServer(function (req, res) {
 
                         players[data.name].lastping = new Date();
                         //checkPlayersAlive();//TODO: find a better place for this, atm executed too often..
-                        break;
+
+
+						res.writeHead(200, {'Content-Type': 'application/json'});
+						res.end( 
+								"{}"
+							   );
+
+                        return;
                     default:;
+						return;
                 };
 
             });
@@ -587,24 +621,24 @@ exports.server = http.createServer(function (req, res) {
 
 fs.readFile('../config.json', 
 		function (err, data) {
-        if (err) 
-            throw err;
-        //sys.puts(data);
+			if (err) 
+				throw err;
+			//sys.puts(data);
 
-        // cut off comments and parse JSON 
-		data = data.toString();
-		data = data.replace(/\/\/.*/gi,"");
-		data = data.replace(/\/\*[^*]+\*\//gm,"");
+			// cut off comments and parse JSON 
+			data = data.toString();
+			data = data.replace(/\/\/.*/gi,"");
+			data = data.replace(/\/\*[^*]+\*\//gm,"");
 
-		config = JSON.parse(data.toString());
+			config = JSON.parse(data.toString());
 
 
-		server_url = config.settings.server_url;
+			server_url = config.settings.server_url;
 
-		client = new faye.Client("http://"+server_url+":80/comet");
+			client = new faye.Client("http://"+server_url+":80/comet");
 
-		exports.server.listen(80,server_url);//fire up server
-		sys.puts("started a server");
+			exports.server.listen(80,server_url);//fire up server
+			sys.puts("started a server");
 		});
 
 
