@@ -34,6 +34,11 @@ http://github.com/wsdookadr
 // TODO:
 //
 // abstract all cell logic in a class called qoox_chess.Cell
+//
+// TODO:
+//
+// block white pieces when black needs to move
+// block black pieces when white needs to move
 
 
 qx.Class.define("qoox_chess.Application",
@@ -144,21 +149,14 @@ qx.Class.define("qoox_chess.Application",
 
 	},
 
-    setTurn: function(Side) {
+    setTurn: function(side,val) {
         var x,y;
-        for(x=0;x<8;x++) {
-            for(y=0;y<8;y++) {
-				//TODO: set for newcell also , not just for pieces
-                if( this.arrayBoard[y][x].color == Side) {
-					
-                    this.arrayBoard[y][x].setDraggable(true);
-                    this.arrayBoard[y][x].setDroppable(true);
-				} else {
-                    this.arrayBoard[y][x].setDraggable(false);
-                    this.arrayBoard[y][x].setDroppable(false);
+        for(x=0;x<8;x++)
+            for(y=0;y<8;y++)
+				if(this.arrayBoard[y][x].piece.color == side) {
+                    this.arrayBoard[y][x].setDraggable(val);
+                    this.arrayBoard[y][x].setDroppable(val);
 				};
-            };
-        };
     },
 
     //methods
