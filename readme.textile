@@ -1,3 +1,7 @@
+
+!http://github.com/wsdookadr/Q-Chess/raw/rewrite/screenshots/sample1.png!
+
+
 Qooxdoo chess
 =============
 
@@ -47,4 +51,4 @@ google-chrome http://localhost/build/index.html  or google-chrome http://localho
 Screenshots
 ===========
 
-!http://github.com/wsdookadr/Q-Chess/raw/rewrite/screenshots/sample1.png!
+
