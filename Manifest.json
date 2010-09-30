@@ -3,22 +3,22 @@
   {
     "name" : "qoox_chess",
 
-    "summary" : "Custom Application",
-    "description" : "This is a skeleton for a custom application with qooxdoo.",
+    "summary" : "Chess multiplayer game",
+    "description" : "",
     
-    "homepage" : "http://some.homepage.url/",
+    "homepage" : "http://github.com/wsdookadr/Q-Chess/",
 
-    "license" : "SomeLicense",
+    "license" : "",
     "authors" : 
     [
       {
-        "name" : "First Author (uid)",
-        "email" : "first.author@some.domain"
+        "name" : "Stefan Petrea",
+        "email" : "randomcoder1@gmail.com"
       }
     ],
 
     "version" : "trunk",
-    "qooxdoo-versions": ["1.1"]
+    "qooxdoo-versions": ["1.1","1.2"]
   },
   
   "provides" : 

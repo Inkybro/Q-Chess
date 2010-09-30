@@ -49,7 +49,7 @@ qx.Class.define("qoox_chess.PreGame",
 
 			var container = new qx.ui.container.Composite(layout2);
 				var label  = new qx.ui.basic.Label("Player name:").set({	});
-				var input1 = new qx.ui.form.TextField("Kasparov").set( {maxLength: 15		});
+				var input1 = new qx.ui.form.TextField("playername").set( {maxLength: 15		});
 				container.add(label);
 				container.add(input1);
 			this.add(container);

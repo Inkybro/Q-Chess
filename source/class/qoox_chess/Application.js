@@ -215,7 +215,7 @@ qx.Class.define("qoox_chess.Application",
     },
     makeChatList: function() {
         var chatList = new qx.ui.form.List;
-        var messageField = new qx.ui.form.TextField("Kasparov").set( 
+        var messageField = new qx.ui.form.TextField("").set( 
                 {
                     maxLength: 50
                 });

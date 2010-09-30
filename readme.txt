@@ -32,14 +32,13 @@ ln -s /usr/local/lib/node/.npm/faye/0.5.2/package/faye-browser-min.js faye-brows
 Running
 =======
 
+mkdir build
 cd server
 ln -s <path_to_qooxdoo-1.1-sdk>
 chmod +x generate.py
 ./generate.py build
-node serv.js &
-google-chrome http://localhost/build/index.html
+sudo node serv.js
+google-chrome http://localhost/build/index.html  or google-chrome http://localhost/source/index.html
 
-(at the moment FF 3.6 doesn't implement websockets, chrome does)
-
-
+(FF 3.6 doesn't implement websockets, chrome does)
 
