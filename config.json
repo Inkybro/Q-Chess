@@ -30,8 +30,8 @@
 
   "settings" :
   {
-	"server_url": "127.0.0.1"
-	//"server_url": "172.28.124.158"
+	//"server_url": "127.0.0.1"
+	"server_url": "172.28.124.158"
   },
 
   "let" :

@@ -82,7 +82,10 @@ qx.Class.define("qoox_chess.Application",
   {
     //ajaxurl: "http://192.168.0.2",
     id: -1,// id of player that has been connected to the server
-    faye_client: null,   
+	faye_client: null,   
+
+	//server_url: "127.0.0.1",
+	server_url: "172.28.124.158",
 
 
     //controls
@@ -136,6 +139,7 @@ qx.Class.define("qoox_chess.Application",
 	// (debugging purposes)
 	getTableState: function() {
 
+
         var req = this.makeRequest("GET");
         req.setParameter("messagetype","get_table_state");
         req.setParameter("name",this.id);
@@ -149,10 +153,11 @@ qx.Class.define("qoox_chess.Application",
 
 
     //methods
-    makeRequest: function(verb) {
+	makeRequest: function(verb) {
+
         var req = 
             new qx.io.remote.Request(
-                    qx.core.Setting.server_url,
+                    this.server_url,
                     verb,
                     "application/json"
                     );
@@ -160,7 +165,8 @@ qx.Class.define("qoox_chess.Application",
         return req;
     },
     
-    makeGrid: function() {
+	makeGrid: function() {
+
         var layout = new qx.ui.layout.Grid();
         layout.setSpacing(20);
 
@@ -360,7 +366,8 @@ qx.Class.define("qoox_chess.Application",
     },
 
     main: function()
-    {
+	{
+
       this.base(arguments);
 
 
@@ -514,9 +521,9 @@ qx.Class.define("qoox_chess.Application",
       if(Faye) {
 
           try {
-
-              var context = this;
-              var client  = new Faye.Client("http://localhost:80/comet",{timeout: 120});
+			  var context = this;
+			  //debugger;
+              var client  = new Faye.Client("http://"+context.server_url+":80/comet",{timeout: 120});
               this.faye_client = client;
 
 
