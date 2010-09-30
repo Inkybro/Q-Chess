@@ -185,7 +185,8 @@ qx.Class.define("qoox_chess.Application",
                         "/playerChannel/"+ invitedPlayer,
                         {
                             sender: this.getPlayerName(),
-                            messagetype: "gameRequest",
+							messagetype: "gameRequest",
+							//maybe replace this with this.getSide()
 							requesterColor: this.side
                         });
 				},this);
@@ -257,8 +258,8 @@ qx.Class.define("qoox_chess.Application",
         req.addListener("completed", function(e) { 
                 context.listPlayers.removeAll();
                 var data = e.getContent();
-                var i;
-                for(i in data.names) {
+				var i;
+                for(i=0;i<data.names.length;i++) {
                     var item = new qx.ui.form.ListItem(data.names[i]);
                     item.setEnabled(true);
                     context.listPlayers.add(item);
@@ -436,6 +437,8 @@ qx.Class.define("qoox_chess.Application",
 										  console.log("[DEBUG] ss is ok with game between players");
 										  //SUCCESS, game can begin
 
+										  
+										  //maybe replace with this.getSide()
 										  context.side = (message.requesterColor == "white" ) ? "black" : "white";
 
 										  context.setCoPlayer(message.sender);
@@ -489,8 +492,11 @@ qx.Class.define("qoox_chess.Application",
                           };
 
                       } else if ( message.messagetype == "setSides" ) {
-                          console.log("received setSide for "+context.id);
+						  console.log("received setSide for "+context.id);
+						  
+						  //maybe replace with this.getSide()
                           context.setSide( message.side );
+						  //maybe replace with this.getSide()
                           if(message.side == "white") {
                               context.ourTurn = true;
                           };
