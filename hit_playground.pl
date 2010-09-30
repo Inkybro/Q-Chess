@@ -18,18 +18,36 @@ use URI::Escape;
 use Perl6::Slurp;
 use WWW::Shorten::TinyURL;
 
+
+
 my $code = slurp($ARGV[0]);
+
+my $here = 0;# here == 0 means run it on online playground, here==1 means run it on local playground
+
+print "here -> $here\n";
+
+print
+	$here == 0
+	? " Running online playground "
+	: " Running local  playground ";
 
 $code =uri_escape_utf8($code,"^A-Za-z");
 $code = "{\"code\": \"$code\" }";
 $code =uri_escape_utf8($code,"^A-Za-z");
 
-my $url = "http://demo.qooxdoo.org/current/playground/#$code";
+my $url = 
+		$here == 1
+		? "file:///home/user/qooxdoo.trunk/application/playground/source/index.html#$code"
+		: "http://demo.qooxdoo.org/current/playground/#$code";
 
-my $shorturl = makeashorterlink($url);#shorten the url
+
+
+my $shorturl = 
+		$here
+		? $url
+		: makeashorterlink($url);#shorten the url
+
 print $shorturl;
-
-
 
 `echo "$shorturl" | xsel -i`; #put it in the clipboard
 

@@ -9,6 +9,7 @@
 var sys = require('sys');
 
 function Table() {
+    this.turn = "white";
 	this.table = 
 		[
 			["wrook" , "wknight" , "wbishop" , "wqueen" , "wking" , "wbishop" , "wknight" , "wrook"] ,
@@ -54,7 +55,9 @@ function Table() {
 			*/
 			
 			this.table[starty][startx] = "empty";
-			this.table[	 endy][	 endx] = piece_start;
+            this.table[	 endy][	 endx] = piece_start;
+
+            this.turn = this.turn == "white" ? "black" : "white";
 			
 			return true;
 		};

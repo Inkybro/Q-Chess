@@ -47,37 +47,35 @@ qx.Class.define("qoox_chess.Application",
   properties: {
       playerName: {
           check: function(value) {
-                  if
-                      (
-                          value                           &&
-                          value.match(/^[a-z0-9]+$/gi,"") &&
-                          value.length >= 5               &&
-                          value.length <=10
-                      ){
-                          return true;
-                          alert("prepare...");
-                      } else {
-                          alert("player name must  be between 5-10 alphanumeric lowercase chars");
-                          return false;
-                      };
-          }
-      },
-      coPlayer: {
-          check: "String",
-          init: null
-      },
-    side: { 
-            check: function(value) {
-                       return
-                           value == "white" ||
-                           value == "black";
-                   },
-            init: "white"
+              if
+              (
+                  value                           &&
+                  value.match(/^[a-z0-9]+$/gi,"") &&
+                  value.length >= 5               &&
+                  value.length <=10
+                  ){
+                      return true;
+                      alert("prepare...");
+                  } else {
+                      alert("player name must  be between 5-10 alphanumeric lowercase chars");
+                      return false;
+                  };
+              }
           },
-    connected: {//after calling initGame() this will be true if it has connected to the server or false otherwise
-        check: "Boolean",
-        init: false
-    }
+          coPlayer: {
+              check: "String",
+              init: null
+          },
+          side: { 
+              check: function(value) {
+                  return value.match(/white|black|none/,"");
+              },
+              init: "none"
+          },
+          connected: {//after calling initGame() this will be true if it has connected to the server or false otherwise
+          check: "Boolean",
+          init: false
+      }
   },
   
   members :
@@ -94,7 +92,7 @@ qx.Class.define("qoox_chess.Application",
     gridChess:       null, // qx.ui.container.Composite object that stores the board
     arrayBoard:      null, // 2D array with the elements
     opponent:        null, // string containing name of opponent
-	ourTurn:         true,
+	ourTurn:         false,
 
 
 
@@ -149,15 +147,6 @@ qx.Class.define("qoox_chess.Application",
 
 	},
 
-    setTurn: function(side,val) {
-        var x,y;
-        for(x=0;x<8;x++)
-            for(y=0;y<8;y++)
-				if(this.arrayBoard[y][x].piece.color == side) {
-                    this.arrayBoard[y][x].setDraggable(val);
-                    this.arrayBoard[y][x].setDroppable(val);
-				};
-    },
 
     //methods
     makeRequest: function(verb) {
@@ -359,7 +348,7 @@ qx.Class.define("qoox_chess.Application",
             // server will assign him a new id
             req.send();
         } catch(e) {
-            alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
+            alert("special3 name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
         };
 
 
@@ -468,10 +457,10 @@ qx.Class.define("qoox_chess.Application",
                           //tell the other player about what move the current player made
                           //this.__handlerPieceAttacked(this.arrayBoard[
 
-						  debugger;
 
                           try {
                               console.log("got move from coplayer");
+
                               var startpos = message.startpos;
                               var endpos = message.endpos;
 
@@ -484,14 +473,27 @@ qx.Class.define("qoox_chess.Application",
                               var starti = context.getPieceFromComposite( start.composite );
                               var endi   = context.getPieceFromComposite( end.composite   );
                               //starti and endi are the piece objects(images) inside start and end
+                              //
+                              //
 
-                              if(endi)  context.imove( starti,endi );
-                              else      context.imove( starti,end  );
+
+                              //debugger;
+
+                              if(endi)  context.imove( starti,endi,0 );
+                              else      context.imove( starti,end ,0 );
+
+                              context.ourTurn = true;
+
                           } catch(e) {
-                              alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
+                              alert("special4 name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
                           };
 
-                      } else {
+                      } else if ( message.messagetype == "setSides" ) {
+                          console.log("received setSide for "+context.id);
+                          context.setSide( message.side );
+                          if(message.side == "white") {
+                              context.ourTurn = true;
+                          };
 					  };
 			  });
 
@@ -555,7 +557,7 @@ qx.Class.define("qoox_chess.Application",
 
           } catch(e) {
 
-              alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
+              alert("special1 name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
 
           };
               
@@ -572,9 +574,36 @@ qx.Class.define("qoox_chess.Application",
 
 
 
-	//abstraction over updateSpotPiece and __handlerPieceAttacked
-	//Javascript typechecking , I don't have it
-	imove: function(a,b) {
+    /*
+     *
+     *abstraction over 
+     *
+     *             * updateSpotPiece
+     *             * __handlerPieceAttacked
+     *
+     *Javascript typechecking , I don't have it
+     *
+     */
+    imove: function(a,b,localMove) {
+
+        console.log("color of piece to be moved " + a.color);
+
+
+        if(this.getSide() == "none"){
+            console.log("tried to move but no side set yet");
+            return;
+        };
+
+        if(localMove && this.getSide() != a.color) {
+            console.log("don't try to move the other person's pieces");
+            return;
+        };
+
+        if(localMove && !this.ourTurn) {
+            console.log("it's not our turn yet");
+            return;
+        };
+
 		if(
 				a instanceof qx.ui.basic.Image &&
 				b instanceof qx.ui.basic.Image
@@ -621,6 +650,13 @@ qx.Class.define("qoox_chess.Application",
          var attacked = e.getTarget();
          var attacker = e.getRelatedTarget();
 
+         if(this.getSide() != atacker.piece.color) {
+             console.log("don't try to move the other player's pieces");
+             return;
+         };
+
+
+
           var req = this.makeRequest("POST");
 
 		  //instead of [3,7] I get [7,3] which is weird... 
@@ -644,8 +680,8 @@ qx.Class.define("qoox_chess.Application",
               if(data.move_okay) {
 				  console.log("legal move");
                   //this.__handlerPieceAttacked(attacker,attacked);
-                  this.imove(attacker,attacked);
-
+                  this.imove(attacker,attacked,1);
+                  this.ourTurn = false;
 			  }else {
 				  console.log("illegal move");
 			  };
@@ -653,9 +689,6 @@ qx.Class.define("qoox_chess.Application",
 
 
           req.send();
-
-
-
     },
 
 	getPieceFromComposite: function(comp) {
@@ -702,6 +735,14 @@ qx.Class.define("qoox_chess.Application",
                   var moved_piece = e.getRelatedTarget();
                   var spot        = e.getTarget();//where it is placed( where it is dropped )
 
+
+                  if(this.getSide() != moved_piece.color) {
+                      console.log("don't try to move the other player's pieces");
+                      return;
+                  };
+
+
+
                   try {
                       //var req = new qx.io.remote.Request(qx.core.Setting.server_url, "POST", "application/json");
                       var req = this.makeRequest("POST");
@@ -724,7 +765,8 @@ qx.Class.define("qoox_chess.Application",
                                   if(data.move_okay) {
 									  console.log("legal move");
 									  //this.updateSpotPiece(moved_piece,spot);
-									  this.imove(moved_piece,spot);
+                                      this.imove(moved_piece,spot,1);
+                                      context.ourTurn = false;
 								  }
                                   else {
 									  console.log("illegal move");
@@ -733,7 +775,7 @@ qx.Class.define("qoox_chess.Application",
                               },this);
                       req.send();
                   } catch(e) {
-                      alert("name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
+                      alert("special2 name:"+e.name+"\ndescription:"+e.description+"\nmessage:"+e.message);
                   };
     },
 

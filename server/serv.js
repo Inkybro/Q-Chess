@@ -302,6 +302,15 @@ function newMove(res,data) {
 
         res.writeHead(200, {'Content-Type': 'application/json'});
 
+        if(data.color != right_table.turn) {
+            //if it's not his turn, then move is invalid on ss
+            res.end( 
+                JSON.stringify( {move_okay: 0})
+            );
+            return;
+        };
+
+
         if(right_table.legal_move(data.startpos , data.endpos)) {
 
 
@@ -325,7 +334,7 @@ function newMove(res,data) {
 				);
 			};
 
-
+            //does it make any sense to make a move if he's not playing with someone ?
 
             res.end( 
                 JSON.stringify( {move_okay: 1,})
@@ -419,9 +428,36 @@ function requestMatch(data,res) {
     //TODO: IMPORTANT !!! check data.requester is really in players[data.player].requests array
 
     meltTables(
-            data.requestee,
-            data.requester
+        data.requestee,
+        data.requester
     );
+
+
+    //tell the players what colors each of them are
+
+
+    try {
+
+        client.publish("/playerChannel/"+data.requester,
+        {
+            messagetype: "setSides",
+            side: "white"
+        });
+
+        client.publish("/playerChannel/"+data.requestee,
+        {
+            messagetype: "setSides",
+            side: "black"
+        });
+
+        console.log("notified players about their sides");
+    } catch(e) {
+        console.log("[ERROR] notifying clients about their sides");
+    };
+
+
+
+
 
 
 	sys.puts("[DEBUG] sending response now! \n");
