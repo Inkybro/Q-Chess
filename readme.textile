@@ -42,3 +42,8 @@ google-chrome http://localhost/build/index.html  or google-chrome http://localho
 
 (FF 3.6 doesn't implement websockets, chrome does)
 
+
+Screenshots
+===========
+
+!http://github.com/wsdookadr/Q-Chess/raw/rewrite/screenshots/sample1.png!
