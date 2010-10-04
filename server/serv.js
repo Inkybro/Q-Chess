@@ -225,17 +225,20 @@ function getTableState(res,params) {
 
 
 
-function errorMessage(message,res) {
+function errorMessage(message,res,additional) {
 	sys.puts(message+"\n");
 	res.writeHead(200, {'Content-Type': 'application/json'});
 	res.end(
-			JSON.stringify( 
+			JSON.stringify(
+				meltObjects(	
+					additional,
 					{ 
-					messagetype: "error",
-					description: message
-					} 
+						messagetype: "error",
+						description: message
+					}
 				)
-            );   
+			)
+           );   
 };
 
 
@@ -275,9 +278,26 @@ function newUser(res,params) {
 
 
 
+function meltObjects(a,b) {
+	if(a == null && b == null){
+		return {};
+	} else if(a == null) {
+		return b;
+	} else if(b == null) {
+		return a;
+	};
 
+	var c = {}; 
 
+	for (var key in a) { 
+		c[key] = a[key]; 
+	};
+	for (var key in b) { 
+		c[key] = b[key]; 
+	};
 
+	return c;
+}
 
 
 
@@ -303,10 +323,12 @@ function newMove(res,data) {
         res.writeHead(200, {'Content-Type': 'application/json'});
 
         if(data.color != right_table.turn) {
-            //if it's not his turn, then move is invalid on ss
-            res.end( 
-                JSON.stringify( {move_okay: 0})
-            );
+			//if it's not his turn, then move is invalid on ss
+			errorMessage(
+				"you moved, but it was not your turn(hasty?)",
+				res,
+				{move_okay: 0}
+			);
             return;
         };
 
@@ -337,16 +359,18 @@ function newMove(res,data) {
             //does it make any sense to make a move if he's not playing with someone ?
 
             res.end( 
-                JSON.stringify( {move_okay: 1,})
+                JSON.stringify( {move_okay: 1})
                 );
         }else {
-            res.end( 
-                JSON.stringify( {move_okay: 0,})
-                );
+			errorMessage(
+				"move is not legal",
+				res,
+				{move_okay: 0}
+			);
         };
 
     } else {
-		errorMessage("table for player with name "+id+" does not exist");
+		errorMessage("table for player with name "+id+" does not exist",res);
 	};
 };
 
@@ -680,4 +704,5 @@ fs.readFile('../config.json',
 
 fayeServer.attach(exports.server);
 //setInterval( function(){checkPlayersAlive();} , 1000 );
+
 

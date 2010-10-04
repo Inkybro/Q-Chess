@@ -22,7 +22,7 @@ use WWW::Shorten::TinyURL;
 
 my $code = slurp($ARGV[0]);
 
-my $here = 0;# here == 0 means run it on online playground, here==1 means run it on local playground
+my $here = 1;# here == 0 means run it on online playground, here==1 means run it on local playground
 
 print "here -> $here\n";
 

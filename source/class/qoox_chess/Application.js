@@ -626,7 +626,8 @@ qx.Class.define("qoox_chess.Application",
 				a instanceof qx.ui.basic.Image &&
 				b instanceof qoox_chess.Cell
 		  )
-			return this.updateSpotPiece(a,b);
+		  return this.updateSpotPiece(a,b);
+
 
 		console.log("something went wrong in imove, should not reach this point");
 	},
@@ -637,7 +638,10 @@ qx.Class.define("qoox_chess.Application",
 
     //moved_piece moves to spot which is a composite
     updateSpotPiece: function(moved_piece,spot) {
-     
+
+
+		console.log("updateSpotPiece");
+
           //this.debug("move sent to server");
           spot.composite.add(moved_piece);
 
@@ -656,12 +660,24 @@ qx.Class.define("qoox_chess.Application",
      *
      */
 
-    __handlerAttackPlayer: function(e) {
+	__handlerAttackPlayer: function(e) {
+
+		if(this.getSide()=="none"){
+			alert("you need to invite someone to play with you.\ngame hasn't started yet");
+		};
 
 
 
          var attacked = e.getTarget();
-         var attacker = e.getRelatedTarget();
+		 var attacker = e.getRelatedTarget();
+
+		 if(
+			 attacked == null ||
+			 attacker == null
+			 ){
+				 return;
+			 };
+
 
          if(this.getSide() != atacker.piece.color) {
              console.log("don't try to move the other player's pieces");
@@ -696,7 +712,8 @@ qx.Class.define("qoox_chess.Application",
                   this.imove(attacker,attacked,1);
                   this.ourTurn = false;
 			  }else {
-				  console.log("illegal move");
+				  var msg = data.description;
+				  console.log( msg ? msg : "illegal move");
 			  };
           },this);
 
@@ -727,6 +744,8 @@ qx.Class.define("qoox_chess.Application",
              return;
 		 };
 		 */
+
+		console.log("__handlerPieceAttacked");
 
 		 var compr = attacker.composite;
 		 var compd = attacked.composite;
@@ -781,9 +800,11 @@ qx.Class.define("qoox_chess.Application",
                                       this.imove(moved_piece,spot,1);
                                       context.ourTurn = false;
 								  }
-                                  else {
-									  console.log("illegal move");
-                                      alert("server says the move is not legal");
+								  else {
+									  var msg = data.description;
+									  msg = msg ? msg : "illegal move";
+									  console.log(msg);
+                                      alert(msg);
 								  };
                               },this);
                       req.send();
