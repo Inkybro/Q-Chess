@@ -39,6 +39,16 @@ http://github.com/wsdookadr
 //
 // block white pieces when black needs to move
 // block black pieces when white needs to move
+//
+//
+//
+// Blocking ->
+//
+// doc.setBlockerColor("#000000");
+// doc.setBlockerOpacity(0.1);
+// this.getRoot().block()
+//
+// http://demo.qooxdoo.org/current/apiviewer/#qx.ui.root.Abstract
 
 
 qx.Class.define("qoox_chess.Application",
@@ -664,6 +674,7 @@ qx.Class.define("qoox_chess.Application",
 
 		if(this.getSide()=="none"){
 			alert("you need to invite someone to play with you.\ngame hasn't started yet");
+			return;
 		};
 
 
@@ -765,7 +776,12 @@ qx.Class.define("qoox_chess.Application",
 
 
                   var moved_piece = e.getRelatedTarget();
-                  var spot        = e.getTarget();//where it is placed( where it is dropped )
+				  var spot        = e.getTarget();//where it is placed( where it is dropped )
+
+				  if(this.getSide() == "none") {
+					  console.log("you first need to play with someone, request a game");
+					  return;
+				  };
 
 
                   if(this.getSide() != moved_piece.color) {
@@ -798,6 +814,7 @@ qx.Class.define("qoox_chess.Application",
 									  console.log("legal move");
 									  //this.updateSpotPiece(moved_piece,spot);
                                       this.imove(moved_piece,spot,1);
+									  debugger;
                                       context.ourTurn = false;
 								  }
 								  else {
